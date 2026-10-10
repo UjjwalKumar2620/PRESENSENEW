@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PreSense — AI-powered surveillance monitoring system with real-time camera feeds and intelligent threat detection." />
+  <title>PreSense — Intelligent Surveillance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="ambient-orb ambient-orb-1"></div>
+    <div class="ambient-orb ambient-orb-2"></div>
+    <div class="ambient-orb ambient-orb-3"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="logo-icon" id="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" stroke="url(#logoGrad)" stroke-width="2.5" />
+            <circle cx="16" cy="16" r="8" stroke="url(#logoGrad)" stroke-width="2" opacity="0.7" />
+            <circle cx="16" cy="16" r="3" fill="url(#logoGrad)" />
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="100%" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1 class="logo-title">PreSense</h1>
+          <span class="logo-subtitle">Intelligent Surveillance</span>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <div class="status-pill" id="status-pill">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecting...</span>
+        </div>
+        <div class="nav-divider"></div>
+        <span class="header-timestamp" id="header-timestamp"></span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main" id="main">
+    <!-- Dashboard Stats Bar -->
+    <section class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-total">—</span>
+          <span class="stat-label">Total Cameras</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-available">—</span>
+          <span class="stat-label">Feeds Available</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--info">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-resolution">—</span>
+          <span class="stat-label">Max Resolution</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--warn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-mode">DEMO</span>
+          <span class="stat-label">Feed Mode</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Header -->
+    <section class="section-header">
+      <h2 class="section-title">Camera Grid</h2>
+      <div class="section-controls">
+        <span class="demo-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Recorded Demo Feeds
+        </span>
+      </div>
+    </section>
+
+    <!-- Camera Grid -->
+    <section class="camera-grid" id="camera-grid">
+      <!-- Populated by JavaScript -->
+    </section>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring spinner-ring-inner"></div>
+      </div>
+      <p class="loading-text">Initializing camera feeds...</p>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="error-banner" hidden>
+      <div class="error-inner">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <div class="error-content">
+          <strong class="error-title">Connection Error</strong>
+          <span class="error-message" id="error-message">Unable to reach the server.</span>
+        </div>
+        <button class="error-retry" id="error-retry">Retry</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Expanded View Modal -->
+  <div class="modal-overlay" id="modal-overlay" hidden>
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <div class="modal-camera-info">
+          <h3 class="modal-camera-name" id="modal-camera-name"></h3>
+          <span class="modal-camera-meta" id="modal-camera-meta"></span>
+        </div>
+        <button class="modal-close" id="modal-close" aria-label="Close expanded view">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <video class="modal-video" id="modal-video" controls autoplay loop muted></video>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2026 PreSense — Intelligent Surveillance System. All feeds are prerecorded demonstrations.</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
