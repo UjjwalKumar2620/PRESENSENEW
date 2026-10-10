@@ -1,8 +1,9 @@
 /**
- * Camera API routes.
+ * Camera API routes for PreSense CCTV Surveillance System.
  *
- * GET  /api/cameras           – List all cameras with metadata and availability
- * GET  /api/cameras/:id/stream – Stream video for a camera (supports HTTP Range)
+ * GET  /api/cameras                  – List all cameras with metadata, zones, coordinates, and stream status
+ * GET  /api/cameras/:cameraId/stream – Stream video for a camera (supports HTTP Range)
+ * GET  /api/cameras/:cameraId/status – Detailed status for a specific camera
  */
 
 const { Router } = require('express');
@@ -24,7 +25,7 @@ function getLocalVideoPath(filename) {
 
 /**
  * GET /api/cameras
- * Returns all cameras with their metadata, stream availability, and storage source (gridfs/local).
+ * Returns all configured cameras with their metadata, map coordinates, coverage zones, and source status.
  */
 router.get('/', async (req, res) => {
   try {
@@ -34,37 +35,48 @@ router.get('/', async (req, res) => {
     // Fetch all stored video files from Atlas GridFS
     const storedFiles = await filesCollection
       .find({})
-      .project({ filename: 1, length: 1, 'metadata.cameraId': 1 })
+      .project({ _id: 1, filename: 1, length: 1, 'metadata.cameraId': 1 })
       .toArray();
 
     const storedMap = new Map(storedFiles.map((f) => [f.metadata?.cameraId, f]));
 
     const cameras = CAMERAS.map((cam) => {
-      const stored = storedMap.get(cam.id);
+      const stored = storedMap.get(cam.id || cam.cameraId);
       const localPath = getLocalVideoPath(cam.filename);
       let localSize = null;
       if (!stored && localPath) {
         try {
           localSize = fs.statSync(localPath).size;
         } catch {
-          // ignore stat errors
+          // ignore
         }
       }
 
       const isAvailable = !!stored || !!localPath;
       const source = stored ? 'gridfs' : localPath ? 'local' : 'none';
       const sizeBytes = stored ? stored.length : localSize;
+      const verifiedGridFSId = stored ? stored._id.toString() : cam.gridFSFileId;
 
       return {
-        id: cam.id,
-        name: cam.name,
-        location: cam.location,
+        cameraId: cam.id || cam.cameraId,
+        id: cam.id || cam.cameraId,
+        displayName: cam.displayName || cam.name,
+        name: cam.displayName || cam.name,
+        zone: cam.zone || cam.location,
+        location: cam.zone || cam.location,
         resolution: cam.resolution,
         fps: cam.fps,
-        status: cam.status,
+        status: cam.status || 'recorded',
+        sourceType: source,
         source, // 'gridfs' (Atlas) or 'local' (filesystem fallback)
         videoAvailable: isAvailable,
         videoSizeBytes: sizeBytes,
+        gridFSFileId: verifiedGridFSId,
+        mimeType: cam.mimeType || 'video/mp4',
+        mapCoordinates: cam.mapCoordinates,
+        coverageZone: cam.coverageZone,
+        description: cam.description,
+        enabled: cam.enabled !== false
       };
     });
 
@@ -83,6 +95,50 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * GET /api/cameras/:id/status
+ * Returns detailed health, playback, and source configuration for a single camera.
+ */
+router.get('/:id/status', async (req, res) => {
+  try {
+    const cameraId = req.params.id.toUpperCase();
+    const camera = CAMERAS.find((c) => (c.id === cameraId || c.cameraId === cameraId));
+
+    if (!camera) {
+      return res.status(404).json({ success: false, error: `Camera ${cameraId} not found.` });
+    }
+
+    const db = getDB();
+    const fileDoc = await db.collection('videos.files').findOne({
+      $or: [
+        { 'metadata.cameraId': cameraId },
+        { filename: camera.filename }
+      ]
+    });
+
+    const localPath = getLocalVideoPath(camera.filename);
+
+    res.json({
+      success: true,
+      cameraId,
+      displayName: camera.displayName,
+      zone: camera.zone,
+      playbackStatus: 'ONLINE_LOOPING',
+      sourceType: fileDoc ? 'MongoDB Atlas GridFS' : localPath ? 'Local Prerecorded Fallback' : 'Unavailable',
+      gridFSAvailable: !!fileDoc,
+      gridFSFileId: fileDoc ? fileDoc._id.toString() : null,
+      localFileAvailable: !!localPath,
+      resolution: camera.resolution,
+      fps: camera.fps,
+      mimeType: camera.mimeType || 'video/mp4',
+      mapCoordinates: camera.mapCoordinates,
+      coverageZone: camera.coverageZone
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * GET /api/cameras/:id/stream
  * Streams the video for a given camera ID from MongoDB Atlas GridFS (or local fallback).
  * Fully supports HTTP Range requests (RFC 7233) for seeking and progressive playback.
@@ -90,7 +146,7 @@ router.get('/', async (req, res) => {
 router.get('/:id/stream', async (req, res) => {
   try {
     const cameraId = req.params.id.toUpperCase();
-    const camera = CAMERAS.find((c) => c.id === cameraId);
+    const camera = CAMERAS.find((c) => (c.id === cameraId || c.cameraId === cameraId));
 
     if (!camera) {
       return res.status(404).json({
@@ -104,8 +160,10 @@ router.get('/:id/stream', async (req, res) => {
 
     // Check GridFS first
     const fileDoc = await filesCollection.findOne({
-      filename: camera.filename,
-      'metadata.cameraId': cameraId,
+      $or: [
+        { 'metadata.cameraId': cameraId },
+        { filename: camera.filename }
+      ]
     });
 
     if (fileDoc) {

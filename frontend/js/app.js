@@ -1,286 +1,1209 @@
 /**
- * PreSense — Frontend Application
- *
- * Fetches camera data from the API, renders a 3×3 grid with video feeds,
- * handles loading states, errors, and expanded modal view.
+ * PreSense — AI-Powered CCTV Monitoring & Rapid Crisis Response Dashboard
+ * Complete frontend controller supporting:
+ * - 9-feed independent continuously looping GridFS CCTV video streams (no pauses/stops)
+ * - Live CCTV On-Screen Display (OSD) HUD with real-time station timestamps on all feeds
+ * - Investigation View without media controls (pure live camera surveillance monitor)
+ * - OpenRouter AI Visual Analysis telling all details of what's happening in the video
+ * - Three-level crisis classification (Observe, Respond, Emergency)
+ * - Interactive SVG venue station map with camera pins & coverage cones
+ * - Full incident lifecycle (Acknowledge, Assign, Resolve, False Alarm)
+ * - Repeatable demonstration scenario simulation
  */
 
 (function () {
   'use strict';
 
-  // ---- Configuration ----
-  const API_BASE = window.location.origin;
-  const ENDPOINTS = {
-    cameras: `${API_BASE}/api/cameras`,
-    stream: (id) => `${API_BASE}/api/cameras/${id}/stream`,
-    health: `${API_BASE}/api/health`,
-  };
-
-  // ---- DOM References ----
-  const dom = {
-    grid: document.getElementById('camera-grid'),
-    loadingOverlay: document.getElementById('loading-overlay'),
-    errorBanner: document.getElementById('error-banner'),
-    errorMessage: document.getElementById('error-message'),
-    errorRetry: document.getElementById('error-retry'),
-    statusPill: document.getElementById('status-pill'),
-    statusText: null, // resolved below
-    timestamp: document.getElementById('header-timestamp'),
-
-    // Stats
-    statTotal: document.getElementById('stat-total'),
-    statAvailable: document.getElementById('stat-available'),
-    statResolution: document.getElementById('stat-resolution'),
-    statMode: document.getElementById('stat-mode'),
-
-    // Modal
-    modalOverlay: document.getElementById('modal-overlay'),
-    modalVideo: document.getElementById('modal-video'),
-    modalCameraName: document.getElementById('modal-camera-name'),
-    modalCameraMeta: document.getElementById('modal-camera-meta'),
-    modalClose: document.getElementById('modal-close'),
-  };
-
-  dom.statusText = dom.statusPill.querySelector('.status-text');
-
   // ---- State ----
-  let cameras = [];
-  let isLoading = true;
+  const state = {
+    cameras: [],
+    incidents: [],
+    analytics: null,
+    settings: null,
+    currentView: 'dashboard',
+    selectedCamera: null,
+    alertFilter: 'All',
+    searchQuery: '',
+    sessionStartTimes: {}, // track viewing duration per camera
+    activeAIReport: null,
+    selectedAnalysisWindow: 10,
+    hudInterval: null,
+  };
 
-  // ---- Initialization ----
-  function init() {
-    updateTimestamp();
-    setInterval(updateTimestamp, 1000);
-    loadCameras();
+  // ---- API Helper ----
+  const API = {
+    async getCameras() {
+      const res = await fetch('/api/cameras');
+      return await res.json();
+    },
+    async getIncidents(filter = {}) {
+      const params = new URLSearchParams(filter).toString();
+      const res = await fetch(`/api/incidents${params ? '?' + params : ''}`);
+      return await res.json();
+    },
+    async updateIncidentStatus(id, status, operatorName, notes) {
+      const res = await fetch(`/api/incidents/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, operatorName, notes }),
+      });
+      return await res.json();
+    },
+    async simulateIncident(scenarioType) {
+      const res = await fetch('/api/incidents/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenarioType }),
+      });
+      return await res.json();
+    },
+    async runAIAnalysis(payload) {
+      const res = await fetch('/api/analysis/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return await res.json();
+    },
+    async createIncident(incidentData) {
+      const res = await fetch('/api/incidents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(incidentData),
+      });
+      return await res.json();
+    },
+    async getAnalytics() {
+      const res = await fetch('/api/analytics');
+      return await res.json();
+    },
+    async getSettings() {
+      const res = await fetch('/api/settings');
+      return await res.json();
+    },
+  };
 
-    // Event listeners
-    dom.errorRetry.addEventListener('click', loadCameras);
-    dom.modalClose.addEventListener('click', closeModal);
-    dom.modalOverlay.addEventListener('click', (e) => {
-      if (e.target === dom.modalOverlay) closeModal();
-    });
+  // ---- DOM Elements Cache ----
+  const dom = {};
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
+  function cacheDom() {
+    dom.cctvGrid = document.getElementById('cctv-grid');
+    dom.alertsList = document.getElementById('alerts-cards-list');
+    dom.alertsCountBadge = document.getElementById('alerts-count-badge');
+    dom.sidebarIncidentCount = document.getElementById('sidebar-incident-count');
+    dom.sidebarCamCount = document.getElementById('sidebar-cam-count');
+    dom.clock = document.getElementById('clock-display');
+    dom.searchInput = document.getElementById('camera-search-input');
+
+    // KPI Elements
+    dom.kpiCameras = document.getElementById('kpi-cameras-online');
+    dom.kpiIncidents = document.getElementById('kpi-incidents-today');
+    dom.kpiActiveAlerts = document.getElementById('kpi-active-alerts');
+    dom.kpiCritical = document.getElementById('kpi-critical-alerts');
+
+    // Modals
+    dom.invModal = document.getElementById('investigation-modal');
+    dom.invVideo = document.getElementById('investigation-video');
+    dom.samplingCanvas = document.getElementById('sampling-canvas');
+    dom.invModalId = document.getElementById('inv-modal-id');
+    dom.invModalName = document.getElementById('inv-modal-name');
+    dom.invModalZone = document.getElementById('inv-modal-zone');
+    dom.invSourceTag = document.getElementById('inv-source-tag');
+    dom.invMetaRes = document.getElementById('inv-meta-res');
+    dom.invSessionDuration = document.getElementById('inv-session-duration');
+    dom.invCameraIncidentsList = document.getElementById('inv-camera-incidents-list');
+    dom.closeInvBtn = document.getElementById('close-investigation-btn');
+
+    // HUD Elements in Modal
+    dom.hudCamId = document.getElementById('hud-cam-id');
+    dom.hudCamZone = document.getElementById('hud-cam-zone');
+    dom.hudLiveTimestamp = document.getElementById('hud-live-timestamp');
+
+    // AI Analysis DOM
+    dom.btnAnalyzeMain = document.getElementById('btn-analyze-main');
+    dom.btnAnalyze10 = document.getElementById('btn-analyze-10');
+    dom.btnAnalyze20 = document.getElementById('btn-analyze-20');
+    dom.aiLoading = document.getElementById('ai-loading-state');
+    dom.aiReportContainer = document.getElementById('ai-report-container');
+    dom.repHappeningText = document.getElementById('rep-happening-text');
+    dom.btnCreateIncidentAi = document.getElementById('btn-create-incident-ai');
+
+    // Simulation Modal
+    dom.simModal = document.getElementById('sim-modal');
+    dom.openSimModalBtn = document.getElementById('open-sim-modal-btn');
+    dom.closeSimBtn = document.getElementById('close-sim-btn');
+
+    // Map DOM
+    dom.venueMapWrap = document.getElementById('venue-map-svg-wrap');
+    dom.mapCardId = document.getElementById('map-card-id');
+    dom.mapCardName = document.getElementById('map-card-name');
+    dom.mapCardZone = document.getElementById('map-card-zone');
+    dom.mapCardVideo = document.getElementById('map-card-video');
+    dom.mapNoPreview = document.getElementById('map-no-preview');
+    dom.mapOpenExpandedBtn = document.getElementById('map-open-expanded-btn');
+
+    // Directory & Log Tables
+    dom.camerasTableBody = document.getElementById('cameras-table-body');
+    dom.incidentsTableBody = document.getElementById('incidents-table-body');
+    dom.incidentsStatusFilter = document.getElementById('incidents-status-filter');
+    dom.incidentsSeverityFilter = document.getElementById('incidents-severity-filter');
+    dom.camerasViewSearch = document.getElementById('cameras-view-search');
+
+    // Analytics DOM
+    dom.refreshAnalyticsBtn = document.getElementById('refresh-analytics-btn');
   }
 
-  // ---- Timestamp ----
-  function updateTimestamp() {
-    const now = new Date();
-    const opts = {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    };
-    const dateStr = now.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-    dom.timestamp.textContent = `${dateStr} • ${now.toLocaleTimeString('en-US', opts)}`;
-  }
-
-  // ---- Status ----
-  function setStatus(state, text) {
-    dom.statusPill.className = `status-pill ${state}`;
-    dom.statusText.textContent = text;
-  }
-
-  // ---- Error Handling ----
-  function showError(message) {
-    dom.errorMessage.textContent = message;
-    dom.errorBanner.hidden = false;
-    setStatus('error', 'Disconnected');
-  }
-
-  function hideError() {
-    dom.errorBanner.hidden = true;
-  }
-
-  // ---- Loading ----
-  function showLoading() {
-    isLoading = true;
-    dom.loadingOverlay.classList.remove('hidden');
-    // Show skeleton grid
-    dom.grid.innerHTML = Array(9)
-      .fill('<div class="camera-card-skeleton"></div>')
-      .join('');
-  }
-
-  function hideLoading() {
-    isLoading = false;
-    dom.loadingOverlay.classList.add('hidden');
-  }
-
-  // ---- Fetch Cameras ----
-  async function loadCameras() {
-    showLoading();
-    hideError();
-    setStatus('', 'Connecting...');
+  // ---- App Initialization ----
+  async function init() {
+    cacheDom();
+    setupClock();
+    setupNavigation();
+    setupFilters();
+    setupSearch();
+    setupModalControls();
+    setupSimulationLauncher();
+    setupGlobalAutoplayKickstarter();
 
     try {
-      const response = await fetch(ENDPOINTS.cameras);
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success || !Array.isArray(data.cameras)) {
-        throw new Error('Invalid API response format.');
-      }
-
-      cameras = data.cameras;
-      setStatus('connected', 'Connected');
-      updateStats();
-      renderGrid();
+      await Promise.all([
+        loadCameras(),
+        loadIncidents(),
+        loadAnalytics(),
+        loadSettings(),
+      ]);
+      renderAll();
+      renderVenueMap();
     } catch (err) {
-      console.error('Failed to load cameras:', err);
-      showError(
-        err.message.includes('fetch')
-          ? 'Cannot connect to the server. Is the backend running?'
-          : err.message
-      );
-      dom.grid.innerHTML = '';
-    } finally {
-      hideLoading();
+      console.error('Initialization error:', err);
     }
   }
 
-  // ---- Update Stats ----
-  function updateStats() {
-    const total = cameras.length;
-    const available = cameras.filter((c) => c.videoAvailable).length;
-
-    dom.statTotal.textContent = total;
-    dom.statAvailable.textContent = available;
-    dom.statMode.textContent = 'DEMO';
-
-    // Find highest resolution
-    const resolutions = cameras.map((c) => {
-      const parts = c.resolution.split('×').map(Number);
-      return Math.max(...parts);
-    });
-    const maxRes = Math.max(...resolutions);
-    dom.statResolution.textContent = maxRes >= 3840 ? '4K UHD' : maxRes >= 1920 ? 'Full HD' : `${maxRes}p`;
-  }
-
-  // ---- Render Camera Grid ----
-  function renderGrid() {
-    dom.grid.innerHTML = '';
-
-    cameras.forEach((camera, index) => {
-      const card = createCameraCard(camera, index);
-      dom.grid.appendChild(card);
-    });
-  }
-
-  function createCameraCard(camera) {
-    const card = document.createElement('div');
-    card.className = 'camera-card';
-    card.setAttribute('role', 'button');
-    card.setAttribute('tabindex', '0');
-    card.setAttribute('aria-label', `Expand ${camera.name} — ${camera.location}`);
-    card.id = `camera-card-${camera.id}`;
-
-    const statusClass = camera.videoAvailable ? 'available' : 'unavailable';
-    const statusLabel = camera.videoAvailable ? 'REC' : 'Offline';
-    const sizeMB = camera.videoSizeBytes
-      ? `${(camera.videoSizeBytes / (1024 * 1024)).toFixed(0)} MB`
-      : '—';
-
-    card.innerHTML = `
-      ${
-        camera.videoAvailable
-          ? `<video class="camera-video" muted loop playsinline preload="metadata"
-              src="${ENDPOINTS.stream(camera.id)}"
-              id="video-${camera.id}"></video>`
-          : `<div class="camera-video" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.8rem;">
-              No Feed Available
-            </div>`
-      }
-      <div class="camera-overlay"></div>
-      ${
-        camera.videoAvailable
-          ? `<div class="camera-rec">
-              <span class="rec-dot"></span>
-              ${camera.source === 'gridfs' ? 'ATLAS GRIDFS' : 'DEMO'}
-            </div>`
-          : ''
-      }
-      <div class="camera-expand-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 3 21 3 21 9"/>
-          <polyline points="9 21 3 21 3 15"/>
-          <line x1="21" y1="3" x2="14" y2="10"/>
-          <line x1="3" y1="21" x2="10" y2="14"/>
-        </svg>
-      </div>
-      <div class="camera-info">
-        <div class="camera-id-row">
-          <span class="camera-id">${camera.id}</span>
-          <span class="camera-status-badge ${statusClass}">${statusLabel}</span>
-        </div>
-        <div class="camera-name">${camera.location}</div>
-        <div class="camera-meta">
-          <span>${camera.resolution}</span>
-          <span>${camera.fps} fps</span>
-          <span>${sizeMB}</span>
-        </div>
-      </div>
-    `;
-
-    // Play video on hover (only thumbnails, to save bandwidth)
-    if (camera.videoAvailable) {
-      const video = card.querySelector('video');
-
-      // Attempt to play inline for a thumbnail-like experience
-      card.addEventListener('mouseenter', () => {
-        video.play().catch(() => {});
-      });
-
-      card.addEventListener('mouseleave', () => {
-        video.pause();
-      });
-
-      // Click to expand
-      card.addEventListener('click', () => openModal(camera));
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openModal(camera);
+  // ---- Global Autoplay Kickstarter ----
+  // Ensures any browser restriction on background video playback is immediately lifted
+  function setupGlobalAutoplayKickstarter() {
+    function startAllVideos() {
+      document.querySelectorAll('video').forEach((vid) => {
+        vid.muted = true;
+        vid.defaultMuted = true;
+        if (vid.paused) {
+          vid.play().catch(() => {});
         }
       });
     }
 
-    return card;
+    ['click', 'touchstart', 'keydown'].forEach((evt) => {
+      window.addEventListener(evt, startAllVideos, { passive: true });
+    });
   }
 
-  // ---- Modal ----
-  function openModal(camera) {
-    dom.modalCameraName.textContent = `${camera.id} — ${camera.location}`;
-    const sourceLabel = camera.source === 'gridfs' ? 'MongoDB Atlas GridFS' : 'Demo Recording';
-    dom.modalCameraMeta.textContent = `${camera.resolution} • ${camera.fps} fps • ${sourceLabel}`;
-    dom.modalVideo.src = ENDPOINTS.stream(camera.id);
-    dom.modalVideo.load();
-    dom.modalOverlay.hidden = false;
-    document.body.style.overflow = 'hidden';
+  // ---- Real-time Clock & CCTV HUD Timers ----
+  function setupClock() {
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + ' UTC';
+      if (dom.clock) dom.clock.textContent = timeStr;
+
+      // Update OSD timestamps on all dashboard camera tiles
+      const nowIso = now.toISOString().replace('T', ' ').slice(0, 19);
+      document.querySelectorAll('.tile-cctv-osd-time').forEach((el) => {
+        el.textContent = nowIso;
+      });
+
+      // Update modal HUD timestamp if open
+      if (dom.hudLiveTimestamp && dom.invModal && !dom.invModal.hidden) {
+        dom.hudLiveTimestamp.textContent = `${nowIso} UTC`;
+      }
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
   }
 
-  function closeModal() {
-    dom.modalOverlay.hidden = true;
-    dom.modalVideo.pause();
-    dom.modalVideo.removeAttribute('src');
-    dom.modalVideo.load();
-    document.body.style.overflow = '';
+  // ---- Navigation Router ----
+  function setupNavigation() {
+    document.querySelectorAll('.nav-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetView = btn.dataset.view;
+        switchView(targetView);
+      });
+    });
   }
 
-  // ---- Boot ----
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
+  function switchView(viewName) {
+    state.currentView = viewName;
+    document.querySelectorAll('.nav-item').forEach((b) => {
+      b.classList.toggle('active', b.dataset.view === viewName);
+    });
+    document.querySelectorAll('.view-panel').forEach((p) => {
+      p.classList.toggle('active', p.id === `view-${viewName}`);
+    });
+
+    if (viewName === 'cameras') renderCamerasTable();
+    if (viewName === 'venue-map') renderVenueMap();
+    if (viewName === 'incidents') renderIncidentsTable();
+    if (viewName === 'analytics') loadAnalytics().then(renderAnalyticsView);
+  }
+
+  // ---- Data Loaders ----
+  async function loadCameras() {
+    const data = await API.getCameras();
+    if (data.success && data.cameras) {
+      state.cameras = data.cameras;
+      if (dom.sidebarCamCount) dom.sidebarCamCount.textContent = state.cameras.length;
+      state.cameras.forEach((c) => {
+        if (!state.sessionStartTimes[c.id]) {
+          state.sessionStartTimes[c.id] = Date.now();
+        }
+      });
+    }
+  }
+
+  async function loadIncidents() {
+    const data = await API.getIncidents();
+    if (data.success && data.incidents) {
+      state.incidents = data.incidents;
+      updateKpis();
+    }
+  }
+
+  async function loadAnalytics() {
+    const data = await API.getAnalytics();
+    if (data.success && data.analytics) {
+      state.analytics = data.analytics;
+    }
+  }
+
+  async function loadSettings() {
+    const data = await API.getSettings();
+    if (data.success && data.settings) {
+      state.settings = data.settings;
+      renderSettingsView(data.settings);
+    }
+  }
+
+  // ---- KPI Calculations ----
+  function updateKpis() {
+    const totalCameras = state.cameras.length;
+    const activeIncidents = state.incidents.filter(
+      (i) => i.status === 'New' || i.status === 'Acknowledged' || i.status === 'Assigned'
+    );
+    const criticalIncidents = activeIncidents.filter((i) => i.severity === 'Emergency');
+
+    if (dom.kpiCameras) dom.kpiCameras.textContent = `${totalCameras} / ${totalCameras}`;
+    if (dom.kpiIncidents) dom.kpiIncidents.textContent = state.incidents.length;
+    if (dom.kpiActiveAlerts) dom.kpiActiveAlerts.textContent = activeIncidents.length;
+    if (dom.kpiCritical) dom.kpiCritical.textContent = criticalIncidents.length;
+
+    if (dom.alertsCountBadge) dom.alertsCountBadge.textContent = `${activeIncidents.length} Active`;
+    if (dom.sidebarIncidentCount) dom.sidebarIncidentCount.textContent = activeIncidents.length;
+  }
+
+  // ---- Render All Views ----
+  function renderAll() {
+    updateKpis();
+    renderCctvGrid();
+    renderAlertsPanel();
+  }
+
+  // ================= 3x3 CCTV GRID (Continuous Looping Feeds) =================
+  function renderCctvGrid() {
+    if (!dom.cctvGrid) return;
+    dom.cctvGrid.innerHTML = '';
+
+    const query = state.searchQuery.toLowerCase().trim();
+    const filteredCameras = state.cameras.filter((cam) => {
+      if (!query) return true;
+      return (
+        cam.id.toLowerCase().includes(query) ||
+        cam.name.toLowerCase().includes(query) ||
+        cam.zone.toLowerCase().includes(query)
+      );
+    });
+
+    if (filteredCameras.length === 0) {
+      dom.cctvGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-muted);">
+          No cameras match search query "${state.searchQuery}".
+        </div>
+      `;
+      return;
+    }
+
+    const currentTimestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+    filteredCameras.forEach((camera) => {
+      const cameraIncidents = state.incidents.filter(
+        (i) => i.cameraId === camera.id && i.status !== 'Resolved' && i.status !== 'False Alarm'
+      );
+      let severityClass = '';
+      let severityBadge = '';
+
+      if (cameraIncidents.some((i) => i.severity === 'Emergency')) {
+        severityClass = 'has-emergency';
+        severityBadge = '<span class="tile-severity-badge badge-emergency">EMERGENCY</span>';
+      } else if (cameraIncidents.some((i) => i.severity === 'Respond')) {
+        severityClass = 'has-respond';
+        severityBadge = '<span class="tile-severity-badge badge-respond">RESPOND</span>';
+      } else if (cameraIncidents.some((i) => i.severity === 'Observe')) {
+        severityClass = 'has-observe';
+        severityBadge = '<span class="tile-severity-badge badge-observe">OBSERVE</span>';
+      }
+
+      const streamUrl = `/api/cameras/${camera.id}/stream`;
+      const sourceBadgeLabel = camera.source === 'gridfs' ? 'ATLAS GRIDFS' : 'DEMO FEED';
+
+      const tile = document.createElement('div');
+      tile.className = `camera-tile ${severityClass}`;
+      tile.id = `tile-${camera.id}`;
+      tile.setAttribute('title', `Open live feed investigation for ${camera.id} (${camera.name})`);
+
+      // Video element created with explicit properties to guarantee continuous loop
+      const videoWrap = document.createElement('div');
+      videoWrap.className = 'tile-video-wrap';
+
+      const video = document.createElement('video');
+      video.className = 'tile-video';
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('muted', '');
+      video.setAttribute('autoplay', '');
+      video.setAttribute('loop', '');
+      video.preload = 'auto';
+      video.src = streamUrl;
+
+      // Event listeners ensuring the video NEVER stalls or pauses
+      video.addEventListener('canplay', () => video.play().catch(() => {}));
+      video.addEventListener('loadeddata', () => video.play().catch(() => {}));
+      video.addEventListener('ended', () => {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      });
+      video.addEventListener('pause', () => {
+        video.play().catch(() => {});
+      });
+
+      // Assemble HUD overlays on the tile
+      const topOverlay = document.createElement('div');
+      topOverlay.className = 'tile-top-overlay';
+      topOverlay.innerHTML = `
+        <span class="tile-cam-id">${camera.id}</span>
+        <div class="tile-badges-row">
+          <span class="tile-rec-badge"><span class="dot-rec"></span> ${sourceBadgeLabel}</span>
+          ${severityBadge}
+        </div>
+      `;
+
+      const bottomOverlay = document.createElement('div');
+      bottomOverlay.className = 'tile-bottom-overlay';
+      bottomOverlay.innerHTML = `
+        <div class="tile-info-text">
+          <span class="tile-name">${camera.name}</span>
+          <span class="tile-zone">${camera.zone}</span>
+          <span class="tile-cctv-osd"><span class="tile-cctv-osd-time">${currentTimestamp}</span> • 30FPS</span>
+        </div>
+        <div class="tile-expand-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+        </div>
+      `;
+
+      videoWrap.appendChild(video);
+      videoWrap.appendChild(topOverlay);
+      videoWrap.appendChild(bottomOverlay);
+      tile.appendChild(videoWrap);
+
+      tile.addEventListener('click', () => openInvestigationModal(camera));
+      dom.cctvGrid.appendChild(tile);
+
+      // Trigger play immediately
+      video.play().catch(() => {});
+    });
+  }
+
+  // ================= ACTIVE ALERTS PANEL =================
+  function renderAlertsPanel() {
+    if (!dom.alertsList) return;
+    dom.alertsList.innerHTML = '';
+
+    let alerts = [...state.incidents];
+
+    if (state.alertFilter !== 'All') {
+      alerts = alerts.filter((a) => a.severity === state.alertFilter);
+    }
+
+    if (alerts.length === 0) {
+      dom.alertsList.innerHTML = `
+        <div style="padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 0.74rem;">
+          No active alerts in "${state.alertFilter}" category.
+        </div>
+      `;
+      return;
+    }
+
+    alerts.forEach((incident) => {
+      const card = document.createElement('div');
+      const sevClass = incident.severity ? incident.severity.toLowerCase() : 'observe';
+      card.className = `alert-card card-${sevClass}`;
+      card.id = `alert-card-${incident.incidentId}`;
+
+      const timeFormatted = formatTimeAgo(incident.timestamp);
+
+      card.innerHTML = `
+        <div class="alert-card-top">
+          <span class="alert-cam-zone">${incident.cameraId} • ${incident.zone}</span>
+          <span class="alert-time">${timeFormatted}</span>
+        </div>
+        <div class="alert-card-type">${incident.eventType}</div>
+        <p class="alert-card-desc">${incident.description}</p>
+        <div class="alert-card-footer">
+          <span class="alert-status-tag">Status: <strong>${incident.status}</strong></span>
+          <button class="alert-open-btn" data-cam="${incident.cameraId}">Inspect Feed →</button>
+        </div>
+      `;
+
+      card.querySelector('.alert-open-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cam = state.cameras.find((c) => c.id === incident.cameraId);
+        if (cam) openInvestigationModal(cam);
+      });
+
+      card.addEventListener('click', () => {
+        const cam = state.cameras.find((c) => c.id === incident.cameraId);
+        if (cam) openInvestigationModal(cam);
+      });
+
+      dom.alertsList.appendChild(card);
+    });
+  }
+
+  // ---- Setup Filters & Search ----
+  function setupFilters() {
+    document.querySelectorAll('.filter-pill').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        state.alertFilter = pill.dataset.filter;
+        renderAlertsPanel();
+      });
+    });
+
+    document.querySelectorAll('.btn-quick-sim').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const scenario = btn.dataset.scenario;
+        await triggerScenario(scenario);
+      });
+    });
+  }
+
+  function setupSearch() {
+    if (dom.searchInput) {
+      dom.searchInput.addEventListener('input', (e) => {
+        state.searchQuery = e.target.value;
+        renderCctvGrid();
+      });
+    }
+  }
+
+  // ================= EXPANDED CAMERA INVESTIGATION VIEW (No Media Controls, Live CCTV OSD) =================
+  function setupModalControls() {
+    if (dom.closeInvBtn) {
+      dom.closeInvBtn.addEventListener('click', closeInvestigationModal);
+    }
+    if (dom.invModal) {
+      dom.invModal.addEventListener('click', (e) => {
+        if (e.target === dom.invModal) closeInvestigationModal();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeInvestigationModal();
+        closeSimModal();
+      }
+    });
+
+    // Primary AI Analyze Button
+    if (dom.btnAnalyzeMain) {
+      dom.btnAnalyzeMain.addEventListener('click', () => runAIAnalysis(state.selectedAnalysisWindow));
+    }
+
+    // Window selector buttons
+    if (dom.btnAnalyze10) {
+      dom.btnAnalyze10.addEventListener('click', () => {
+        state.selectedAnalysisWindow = 10;
+        dom.btnAnalyze10.classList.add('active');
+        if (dom.btnAnalyze20) dom.btnAnalyze20.classList.remove('active');
+      });
+    }
+    if (dom.btnAnalyze20) {
+      dom.btnAnalyze20.addEventListener('click', () => {
+        state.selectedAnalysisWindow = 20;
+        dom.btnAnalyze20.classList.add('active');
+        if (dom.btnAnalyze10) dom.btnAnalyze10.classList.remove('active');
+      });
+    }
+
+    if (dom.btnCreateIncidentAi) {
+      dom.btnCreateIncidentAi.addEventListener('click', logIncidentFromAI);
+    }
+  }
+
+  function openInvestigationModal(camera) {
+    state.selectedCamera = camera;
+    dom.invModalId.textContent = camera.id;
+    dom.invModalName.textContent = camera.name;
+    dom.invModalZone.textContent = `${camera.zone} • ${camera.source === 'gridfs' ? 'MongoDB Atlas GridFS Stream' : 'Transit CCTV Network'}`;
+    
+    // Set Surveillance Monitor HUD tags
+    if (dom.hudCamId) dom.hudCamId.textContent = camera.id;
+    if (dom.hudCamZone) dom.hudCamZone.textContent = `ZONE: ${camera.zone.toUpperCase()}`;
+    if (dom.invSourceTag) dom.invSourceTag.textContent = camera.source === 'gridfs' ? 'STREAMING FROM ATLAS GRIDFS' : 'PRERECORDED CCTV FEED';
+    if (dom.invMetaRes) dom.invMetaRes.textContent = `${camera.resolution || '1920×1080'} @ ${camera.fps || 25} FPS`;
+
+    const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    if (dom.hudLiveTimestamp) dom.hudLiveTimestamp.textContent = `${nowIso} UTC`;
+
+    // Session duration
+    const startTime = state.sessionStartTimes[camera.id] || Date.now();
+    const sessionSeconds = Math.max(10, Math.floor((Date.now() - startTime) / 1000));
+    const mins = Math.floor(sessionSeconds / 60);
+    const secs = sessionSeconds % 60;
+    dom.invSessionDuration.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+    // STRICT: Absolutely NO playback/speed/pause controls! Pure live CCTV surveillance monitor
+    dom.invVideo.controls = false;
+    dom.invVideo.removeAttribute('controls');
+    dom.invVideo.muted = true;
+    dom.invVideo.defaultMuted = true;
+    dom.invVideo.loop = true;
+    dom.invVideo.autoplay = true;
+    dom.invVideo.playsInline = true;
+    dom.invVideo.setAttribute('playsinline', '');
+    dom.invVideo.setAttribute('muted', '');
+    dom.invVideo.setAttribute('autoplay', '');
+    dom.invVideo.setAttribute('loop', '');
+
+    dom.invVideo.src = `/api/cameras/${camera.id}/stream`;
+    dom.invVideo.load();
+    dom.invVideo.play().catch(() => {});
+
+    // Ensure loop continues without stopping
+    dom.invVideo.onended = () => {
+      dom.invVideo.currentTime = 0;
+      dom.invVideo.play().catch(() => {});
+    };
+    dom.invVideo.onpause = () => {
+      dom.invVideo.play().catch(() => {});
+    };
+
+    // Render camera's incidents in modal
+    renderCameraIncidentsHistory(camera.id);
+
+    // Reset AI container
+    dom.aiLoading.hidden = true;
+    dom.aiReportContainer.hidden = true;
+    state.activeAIReport = null;
+
+    dom.invModal.hidden = false;
+  }
+
+  function closeInvestigationModal() {
+    if (dom.invModal) dom.invModal.hidden = true;
+    if (dom.invVideo) {
+      dom.invVideo.pause();
+      dom.invVideo.removeAttribute('src');
+      dom.invVideo.load();
+    }
+    state.selectedCamera = null;
+  }
+
+  function renderCameraIncidentsHistory(cameraId) {
+    if (!dom.invCameraIncidentsList) return;
+    const cameraIncidents = state.incidents.filter((i) => i.cameraId === cameraId);
+    if (cameraIncidents.length === 0) {
+      dom.invCameraIncidentsList.innerHTML = `<div class="history-empty">No active security anomalies flagged for this feed.</div>`;
+      return;
+    }
+
+    dom.invCameraIncidentsList.innerHTML = cameraIncidents
+      .map(
+        (inc) => `
+        <div style="background: var(--bg-card); padding: 8px 10px; border-radius: 4px; border-left: 3px solid ${
+          inc.severity === 'Emergency' ? 'var(--severity-emergency)' : inc.severity === 'Respond' ? 'var(--severity-respond)' : 'var(--severity-observe)'
+        }">
+          <div style="display:flex; justify-content:space-between; font-size:0.68rem;">
+            <strong>${inc.eventType}</strong>
+            <span style="color:var(--text-muted);">${formatTimeAgo(inc.timestamp)}</span>
+          </div>
+          <div style="font-size:0.68rem; color:var(--text-secondary); margin-top:2px;">${inc.description}</div>
+        </div>
+      `
+      )
+      .join('');
+  }
+
+  // ================= OPENROUTER AI VISUAL ANALYSIS =================
+  async function runAIAnalysis(windowMinutes = 10) {
+    if (!state.selectedCamera) return;
+
+    dom.aiLoading.hidden = false;
+    dom.aiReportContainer.hidden = true;
+
+    // Sample representative frames from playing video via canvas
+    const frames = captureSampledFrames(3);
+
+    const startTime = state.sessionStartTimes[state.selectedCamera.id] || Date.now();
+    const sessionDurationSeconds = Math.max(30, Math.floor((Date.now() - startTime) / 1000));
+
+    try {
+      const result = await API.runAIAnalysis({
+        cameraId: state.selectedCamera.id,
+        windowMinutes,
+        sessionDurationSeconds,
+        sampledFrames: frames,
+        customContext: `Visual investigation of camera feed ${state.selectedCamera.name} (${state.selectedCamera.zone}). Focus on current activity, people/crowd movement, and security status.`,
+      });
+
+      dom.aiLoading.hidden = true;
+
+      if (result.success && result.report) {
+        state.activeAIReport = result.report;
+        displayAIReport(result.report);
+
+        if (result.createdIncident) {
+          state.incidents.unshift(result.createdIncident);
+          renderAll();
+        }
+      } else {
+        alert(`Analysis Error: ${result.error || 'Failed to complete visual analysis.'}`);
+      }
+    } catch (err) {
+      dom.aiLoading.hidden = true;
+      alert(`AI Analysis Request Failed: ${err.message}`);
+    }
+  }
+
+  // Capture bounded frames using HTML5 canvas
+  function captureSampledFrames(count = 3) {
+    const video = dom.invVideo;
+    if (!video || !dom.samplingCanvas || video.videoWidth === 0) return [];
+
+    const canvas = dom.samplingCanvas;
+    const width = 640;
+    const height = Math.round((video.videoHeight / video.videoWidth) * 640) || 360;
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    const frames = [];
+
+    try {
+      ctx.drawImage(video, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      frames.push(dataUrl);
+    } catch (e) {
+      console.warn('Canvas frame capture fallback:', e.message);
+    }
+
+    return frames;
+  }
+
+  function displayAIReport(report) {
+    dom.aiReportContainer.hidden = false;
+
+    // Prominent "What is Happening" Highlight Card
+    const summaryText = report.whatIsHappeningSummary || report.observedActivity?.sceneOverview || 'No description available.';
+    if (dom.repHappeningText) {
+      dom.repHappeningText.textContent = summaryText;
+    }
+
+    // Section A: Summary
+    const winPill = document.getElementById('rep-window-pill');
+    if (winPill) winPill.textContent = report.summary.requestedWindow || '10 Min Window';
+    
+    const srcPill = document.getElementById('rep-source-pill');
+    if (srcPill) srcPill.textContent = report.summary.sourceType || 'Atlas GridFS';
+    
+    const timePill = document.getElementById('rep-time-pill');
+    if (timePill) timePill.textContent = new Date().toLocaleTimeString();
+
+    const covNotice = document.getElementById('rep-coverage-notice');
+    if (covNotice) {
+      covNotice.textContent = `Actual analyzed duration: ${report.summary.actualAnalyzedDuration || 'Sampled Footage'}`;
+    }
+
+    // Section D: Risk Assessment
+    const riskBadge = document.getElementById('rep-risk-badge');
+    const riskLevel = report.riskAssessment?.level || 'Observe';
+    if (riskBadge) {
+      riskBadge.textContent = `LEVEL: ${riskLevel.toUpperCase()}`;
+      riskBadge.className = `risk-level-badge ${
+        riskLevel === 'Emergency' ? 'badge-emergency' : riskLevel === 'Respond' ? 'badge-respond' : 'badge-observe'
+      }`;
+    }
+    const riskExp = document.getElementById('rep-risk-explanation');
+    if (riskExp) riskExp.textContent = report.riskAssessment?.explanation || 'Normal operations.';
+
+    // Section B: Observed Activity
+    const obsOverview = document.getElementById('rep-observed-overview');
+    if (obsOverview) obsOverview.textContent = report.observedActivity?.sceneOverview || 'No data';
+    
+    const crowdFlow = document.getElementById('rep-crowd-flow');
+    if (crowdFlow) crowdFlow.textContent = report.observedActivity?.crowdFlow || 'Normal pedestrian transit';
+    
+    const visibility = document.getElementById('rep-visibility');
+    if (visibility) visibility.textContent = report.observedActivity?.physicalConditions || 'Clear camera visibility';
+
+    // Section C: Potential Incidents
+    const incList = document.getElementById('rep-incidents-list');
+    if (incList) {
+      if (report.potentialIncidents && report.potentialIncidents.length > 0) {
+        incList.innerHTML = report.potentialIncidents
+          .map(
+            (inc) => `
+          <div style="background: var(--bg-card); padding: 8px 10px; border-radius: 4px; margin-top: 6px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.74rem;">
+              <strong>${inc.eventCategory}</strong>
+              <span class="report-pill ${inc.severity === 'Emergency' ? 'badge-emergency' : inc.severity === 'Respond' ? 'badge-respond' : 'badge-observe'}">${inc.severity}</span>
+            </div>
+            <p style="font-size:0.72rem; color:var(--text-secondary); margin-top:4px;">${inc.observedEvidence}</p>
+            <p style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">Reasoning: ${inc.reasoning}</p>
+          </div>
+        `
+          )
+          .join('');
+      } else {
+        incList.innerHTML = `<span style="font-size:0.72rem; color:var(--text-muted);">No anomalous incidents detected. Feed shows normal operations.</span>`;
+      }
+    }
+
+    // Section E: Recommended Action
+    const opAction = document.getElementById('rep-operator-action');
+    if (opAction) opAction.textContent = report.recommendedAction?.operatorAction || 'Continue routine surveillance.';
+    
+    const dispAction = document.getElementById('rep-dispatch-action');
+    if (dispAction) dispAction.textContent = report.recommendedAction?.dispatchAction || 'None required.';
+
+    // Section F: Limitations
+    const limitText = document.getElementById('rep-limitations-text');
+    if (limitText) {
+      limitText.textContent = `${report.limitations?.footageLimitations || ''} ${report.limitations?.ambiguities || ''}`;
+    }
+  }
+
+  async function logIncidentFromAI() {
+    if (!state.activeAIReport || !state.selectedCamera) return;
+
+    const rep = state.activeAIReport;
+    const primaryInc = rep.potentialIncidents?.[0] || {
+      eventCategory: 'Operational Observation',
+      severity: rep.riskAssessment?.level || 'Observe',
+      observedEvidence: rep.whatIsHappeningSummary || 'Report filed by AI analysis',
+    };
+
+    try {
+      const result = await API.createIncident({
+        cameraId: state.selectedCamera.id,
+        cameraName: state.selectedCamera.name,
+        zone: state.selectedCamera.zone,
+        eventType: primaryInc.eventCategory,
+        severity: primaryInc.severity || 'Observe',
+        description: `[AI Finding] ${primaryInc.observedEvidence}`,
+        evidenceReference: `${state.selectedCamera.id} OpenRouter Report (${rep.reportId})`,
+        sourceType: 'ai_vision_analysis',
+      });
+
+      if (result.success && result.incident) {
+        state.incidents.unshift(result.incident);
+        renderAll();
+        renderCameraIncidentsHistory(state.selectedCamera.id);
+        alert(`Incident ${result.incident.incidentId} successfully logged and added to Active Alerts.`);
+      }
+    } catch (err) {
+      alert(`Failed to log incident: ${err.message}`);
+    }
+  }
+
+  // ================= SCENARIO SIMULATION =================
+  function setupSimulationLauncher() {
+    if (dom.openSimModalBtn) {
+      dom.openSimModalBtn.addEventListener('click', () => {
+        if (dom.simModal) dom.simModal.hidden = false;
+      });
+    }
+    if (dom.closeSimBtn) {
+      dom.closeSimBtn.addEventListener('click', closeSimModal);
+    }
+    if (dom.simModal) {
+      dom.simModal.addEventListener('click', (e) => {
+        if (e.target === dom.simModal) closeSimModal();
+      });
+    }
+
+    document.querySelectorAll('.btn-launch-scen').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const card = e.target.closest('.scenario-card');
+        if (card) {
+          const scenarioType = card.dataset.scenario;
+          await triggerScenario(scenarioType);
+          closeSimModal();
+        }
+      });
+    });
+  }
+
+  function closeSimModal() {
+    if (dom.simModal) dom.simModal.hidden = true;
+  }
+
+  async function triggerScenario(scenarioType) {
+    try {
+      const result = await API.simulateIncident(scenarioType);
+      if (result.success && result.incident) {
+        state.incidents.unshift(result.incident);
+        renderAll();
+        switchView('dashboard');
+        const tile = document.getElementById(`tile-${result.incident.cameraId}`);
+        if (tile) tile.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    } catch (err) {
+      alert(`Simulation failed: ${err.message}`);
+    }
+  }
+
+  // ================= INTERACTIVE VENUE MAP =================
+  function renderVenueMap() {
+    if (!dom.venueMapWrap) return;
+
+    const svgHtml = `
+      <svg class="station-svg" viewBox="0 0 950 520" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="pin-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+          </filter>
+        </defs>
+
+        <!-- Floor Background -->
+        <rect x="20" y="20" width="910" height="480" rx="10" fill="#0c0e15" stroke="#1d2335" stroke-width="2"/>
+
+        <!-- ZONE 1: NORTH PARKING & BUS PLAZA (Top Left) -->
+        <rect class="zone-rect" x="40" y="40" width="220" height="150" rx="6"/>
+        <text x="50" y="62" fill="#64748b" font-size="11" font-weight="700">NORTH BUS PLAZA & PARKING</text>
+
+        <!-- ZONE 2: PLATFORM 1 - TRACKSIDE NORTH -->
+        <rect class="zone-rect" x="280" y="40" width="370" height="80" rx="6"/>
+        <text x="290" y="60" fill="#64748b" font-size="11" font-weight="700">PLATFORM 1 (WESTBOUND EXPRESS)</text>
+        <line x1="280" y1="95" x2="650" y2="95" class="track-line"/>
+
+        <!-- ZONE 3: TECH VAULT & SECURITY OPS (Top Right) -->
+        <rect class="zone-rect" x="670" y="40" width="240" height="150" rx="6"/>
+        <text x="680" y="62" fill="#ef4444" font-size="11" font-weight="700">RESTRICTED: TECH & SECURITY VAULT</text>
+
+        <!-- ZONE 4: OVERBRIDGE & WEST STAIRWELL (Mid Left) -->
+        <rect class="zone-rect" x="40" y="210" width="220" height="110" rx="6"/>
+        <text x="50" y="230" fill="#64748b" font-size="11" font-weight="700">WEST FOOTBRIDGE & STAIRWELL B</text>
+
+        <!-- ZONE 5: PLATFORM 2 (Mid-Right) -->
+        <rect class="zone-rect" x="500" y="140" width="150" height="80" rx="6"/>
+        <text x="510" y="160" fill="#64748b" font-size="10" font-weight="700">PLATFORM 2 EGRESS</text>
+
+        <!-- ZONE 6: CENTRAL CONCOURSE & TURNSTILES (Center) -->
+        <rect class="zone-rect" x="280" y="210" width="370" height="160" rx="6" style="fill:#121726;"/>
+        <text x="290" y="230" fill="#ff6b00" font-size="12" font-weight="800">MAIN PASSENGER CONCOURSE & TURNSTILES</text>
+        <line x1="320" y1="280" x2="600" y2="280" stroke="#334155" stroke-width="3" stroke-dasharray="12 8"/>
+        <text x="420" y="275" fill="#475569" font-size="9" font-family="monospace">AUTO TICKET GATES</text>
+
+        <!-- ZONE 7: MAIN PASSENGER ENTRANCE (Bottom Left) -->
+        <rect class="zone-rect" x="40" y="340" width="220" height="140" rx="6"/>
+        <text x="50" y="360" fill="#64748b" font-size="11" font-weight="700">MAIN TERMINAL ENTRANCE & LOBBY</text>
+
+        <!-- ZONE 8: EAST WAITING LOUNGE (Bottom Center) -->
+        <rect class="zone-rect" x="280" y="390" width="370" height="90" rx="6"/>
+        <text x="290" y="410" fill="#64748b" font-size="11" font-weight="700">EAST PASSENGER WAITING LOUNGE</text>
+
+        <!-- ZONE 9: CARGO & FREIGHT DOCK (Bottom Right) -->
+        <rect class="zone-rect" x="670" y="210" width="240" height="270" rx="6"/>
+        <text x="680" y="230" fill="#64748b" font-size="11" font-weight="700">LOGISTICS LOADING DOCK & FREIGHT</text>
+
+        <!-- 9 CAMERA MARKERS -->
+        ${state.cameras
+          .map((cam) => {
+            const coords = cam.mapCoordinates || { x: 100, y: 100 };
+            const isSelected = state.selectedCamera && state.selectedCamera.id === cam.id;
+            const hasIncident = state.incidents.find(
+              (i) => i.cameraId === cam.id && i.status !== 'Resolved' && i.status !== 'False Alarm'
+            );
+            const pulseColor = hasIncident
+              ? hasIncident.severity === 'Emergency'
+                ? '#ef4444'
+                : hasIncident.severity === 'Respond'
+                ? '#f59e0b'
+                : '#3b82f6'
+              : '#3b82f6';
+
+            return `
+            <g class="camera-pin ${isSelected ? 'selected' : ''}" data-cam-id="${cam.id}" transform="translate(${coords.x}, ${coords.y})">
+              ${
+                hasIncident
+                  ? `<circle class="incident-pulse" cx="0" cy="0" r="14" fill="${pulseColor}" opacity="0.4"/>`
+                  : ''
+              }
+              <circle cx="0" cy="0" r="10" fill="${hasIncident ? pulseColor : '#1e293b'}" stroke="${hasIncident ? '#ffffff' : '#38bdf8'}" stroke-width="2"/>
+              <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+              <text class="pin-label" x="14" y="4">${cam.id}</text>
+            </g>
+          `;
+          })
+          .join('')}
+      </svg>
+    `;
+
+    dom.venueMapWrap.innerHTML = svgHtml;
+
+    dom.venueMapWrap.querySelectorAll('.camera-pin').forEach((pin) => {
+      pin.addEventListener('click', () => {
+        const camId = pin.dataset.camId;
+        const cam = state.cameras.find((c) => c.id === camId);
+        if (cam) selectMapCamera(cam);
+      });
+    });
+
+    if (dom.mapOpenExpandedBtn) {
+      dom.mapOpenExpandedBtn.addEventListener('click', () => {
+        if (state.selectedCamera) openInvestigationModal(state.selectedCamera);
+      });
+    }
+  }
+
+  function selectMapCamera(camera) {
+    state.selectedCamera = camera;
+    dom.mapCardId.textContent = camera.id;
+    dom.mapCardBadge.textContent = camera.source === 'gridfs' ? 'ATLAS GRIDFS' : 'DEMO LOOP';
+    dom.mapCardName.textContent = camera.name;
+    dom.mapCardZone.textContent = camera.zone;
+    dom.mapNoPreview.style.display = 'none';
+
+    dom.mapCardVideo.src = `/api/cameras/${camera.id}/stream`;
+    dom.mapCardVideo.muted = true;
+    dom.mapCardVideo.loop = true;
+    dom.mapCardVideo.load();
+    dom.mapCardVideo.play().catch(() => {});
+
+    dom.mapOpenExpandedBtn.disabled = false;
+
+    dom.venueMapWrap.querySelectorAll('.camera-pin').forEach((p) => {
+      p.classList.toggle('selected', p.dataset.camId === camera.id);
+    });
+  }
+
+  // ================= VIEW 2: CAMERAS TABLE =================
+  function renderCamerasTable() {
+    if (!dom.camerasTableBody) return;
+    dom.camerasTableBody.innerHTML = '';
+
+    const query = (dom.camerasViewSearch ? dom.camerasViewSearch.value : '').toLowerCase().trim();
+    const list = state.cameras.filter((c) => {
+      if (!query) return true;
+      return c.id.toLowerCase().includes(query) || c.name.toLowerCase().includes(query) || c.zone.toLowerCase().includes(query);
+    });
+
+    list.forEach((cam) => {
+      const tr = document.createElement('tr');
+      const gridFsIdDisplay = cam.gridFSFileId ? `${cam.gridFSFileId.slice(0, 10)}...` : 'Local Fallback';
+      const sourceBadge = cam.source === 'gridfs'
+        ? '<span class="table-badge badge-observe">GridFS Bucket</span>'
+        : '<span class="table-badge badge-respond">Demo Fallback</span>';
+
+      tr.innerHTML = `
+        <td style="font-family:var(--font-mono); font-weight:700; color:var(--brand-orange);">${cam.id}</td>
+        <td style="font-weight:600; color:#fff;">${cam.name}</td>
+        <td>${cam.zone}</td>
+        <td style="font-family:var(--font-mono);">${cam.resolution} @ ${cam.fps}fps</td>
+        <td>${sourceBadge}</td>
+        <td style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">${gridFsIdDisplay}</td>
+        <td><span class="table-badge" style="background:var(--status-connected-bg); color:var(--status-connected);">ONLINE_LOOP</span></td>
+        <td>
+          <button class="table-btn" data-cam="${cam.id}">Inspect</button>
+        </td>
+      `;
+
+      tr.querySelector('button').addEventListener('click', () => openInvestigationModal(cam));
+      dom.camerasTableBody.appendChild(tr);
+    });
+  }
+
+  // ================= VIEW 4: INCIDENTS TABLE =================
+  function renderIncidentsTable() {
+    if (!dom.incidentsTableBody) return;
+    dom.incidentsTableBody.innerHTML = '';
+
+    const statusFilter = dom.incidentsStatusFilter ? dom.incidentsStatusFilter.value : 'All';
+    const severityFilter = dom.incidentsSeverityFilter ? dom.incidentsSeverityFilter.value : 'All';
+
+    let list = [...state.incidents];
+    if (statusFilter !== 'All') list = list.filter((i) => i.status === statusFilter);
+    if (severityFilter !== 'All') list = list.filter((i) => i.severity === severityFilter);
+
+    if (list.length === 0) {
+      dom.incidentsTableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No incidents found.</td></tr>`;
+      return;
+    }
+
+    list.forEach((inc) => {
+      const tr = document.createElement('tr');
+      const sevClass = inc.severity === 'Emergency' ? 'badge-emergency' : inc.severity === 'Respond' ? 'badge-respond' : 'badge-observe';
+
+      tr.innerHTML = `
+        <td style="font-family:var(--font-mono); font-weight:700;">${inc.incidentId}</td>
+        <td style="font-size:0.7rem;">${new Date(inc.timestamp).toLocaleString()}</td>
+        <td><strong>${inc.cameraId}</strong> • ${inc.zone}</td>
+        <td><strong>${inc.eventType}</strong></td>
+        <td><span class="table-badge ${sevClass}">${inc.severity}</span></td>
+        <td><span class="table-badge" style="background:var(--bg-elevated);">${inc.status}</span></td>
+        <td style="font-size:0.7rem; color:var(--text-muted);">${inc.evidenceReference || '—'}</td>
+        <td class="table-actions-cell">
+          ${inc.status === 'New' ? `<button class="table-btn btn-ack" data-id="${inc.incidentId}">Acknowledge</button>` : ''}
+          ${inc.status === 'Acknowledged' ? `<button class="table-btn btn-assign" data-id="${inc.incidentId}">Assign</button>` : ''}
+          ${inc.status !== 'Resolved' && inc.status !== 'False Alarm' ? `<button class="table-btn btn-resolve" data-id="${inc.incidentId}">Resolve</button>` : ''}
+          ${inc.status !== 'Resolved' && inc.status !== 'False Alarm' ? `<button class="table-btn btn-false" data-id="${inc.incidentId}">False Alarm</button>` : ''}
+        </td>
+      `;
+
+      const ackBtn = tr.querySelector('.btn-ack');
+      if (ackBtn) ackBtn.addEventListener('click', () => changeIncidentStatus(inc.incidentId, 'Acknowledged'));
+
+      const assignBtn = tr.querySelector('.btn-assign');
+      if (assignBtn) assignBtn.addEventListener('click', () => changeIncidentStatus(inc.incidentId, 'Assigned'));
+
+      const resolveBtn = tr.querySelector('.btn-resolve');
+      if (resolveBtn) resolveBtn.addEventListener('click', () => changeIncidentStatus(inc.incidentId, 'Resolved'));
+
+      const falseBtn = tr.querySelector('.btn-false');
+      if (falseBtn) falseBtn.addEventListener('click', () => changeIncidentStatus(inc.incidentId, 'False Alarm'));
+
+      dom.incidentsTableBody.appendChild(tr);
+    });
+  }
+
+  async function changeIncidentStatus(incidentId, newStatus) {
+    try {
+      const res = await API.updateIncidentStatus(incidentId, newStatus, 'Station Duty Operator', `Triage action: ${newStatus}`);
+      if (res.success) {
+        const inc = state.incidents.find((i) => i.incidentId === incidentId);
+        if (inc) inc.status = newStatus;
+        renderAll();
+        renderIncidentsTable();
+      }
+    } catch (e) {
+      alert(`Status update failed: ${e.message}`);
+    }
+  }
+
+  // ================= VIEW 5: ANALYTICS VIEW =================
+  function renderAnalyticsView() {
+    if (!state.analytics) return;
+    const an = state.analytics;
+
+    document.getElementById('an-total-incidents').textContent = an.totalIncidents;
+    document.getElementById('an-critical-count').textContent = an.bySeverity.Emergency || 0;
+    document.getElementById('an-respond-count').textContent = an.bySeverity.Respond || 0;
+    document.getElementById('an-observe-count').textContent = an.bySeverity.Observe || 0;
+    document.getElementById('an-avg-response').textContent = `${an.avgResponseTimeMinutes}m`;
+    document.getElementById('an-availability').textContent = `${an.cameraAvailabilityPercent}%`;
+
+    const catContainer = document.getElementById('chart-by-category');
+    if (catContainer && an.byCategory) {
+      const maxVal = Math.max(...Object.values(an.byCategory), 1);
+      catContainer.innerHTML = Object.entries(an.byCategory)
+        .map(([cat, count]) => {
+          const pct = Math.round((count / maxVal) * 100);
+          return `
+          <div class="chart-bar-row">
+            <div class="bar-label-row">
+              <span>${cat}</span>
+              <strong>${count}</strong>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+        })
+        .join('');
+    }
+
+    const camContainer = document.getElementById('chart-by-camera');
+    if (camContainer && an.byCamera) {
+      const maxVal = Math.max(...Object.values(an.byCamera), 1);
+      camContainer.innerHTML = Object.entries(an.byCamera)
+        .map(([camId, count]) => {
+          const pct = Math.round((count / maxVal) * 100);
+          return `
+          <div class="chart-bar-row">
+            <div class="bar-label-row">
+              <span>${camId}</span>
+              <strong>${count} incidents</strong>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width: ${pct}%; background:#3b82f6;"></div>
+            </div>
+          </div>
+        `;
+        })
+        .join('');
+    }
+  }
+
+  // ================= VIEW 6: SETTINGS VIEW =================
+  function renderSettingsView(settings) {
+    if (!settings) return;
+    if (document.getElementById('set-ai-model')) {
+      document.getElementById('set-ai-model').textContent = settings.openRouter?.model || 'openai/gpt-4o-mini';
+    }
+    if (document.getElementById('set-ai-key-status')) {
+      document.getElementById('set-ai-key-status').textContent = settings.openRouter?.configured ? 'ACTIVE (SECURE)' : 'NOT_CONFIGURED';
+    }
+    if (document.getElementById('set-mongo-status')) {
+      document.getElementById('set-mongo-status').textContent = settings.database?.connected ? 'CONNECTED (ATLAS)' : 'DISCONNECTED';
+    }
+    if (document.getElementById('set-gridfs-count')) {
+      document.getElementById('set-gridfs-count').textContent = `${settings.database?.gridFSVideoFilesCount || 7} Files Verified (videos bucket)`;
+    }
+  }
+
+  // ---- Helper: Format Time Ago ----
+  function formatTimeAgo(timestamp) {
+    if (!timestamp) return 'Just now';
+    const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
+    if (seconds < 60) return `${Math.max(1, seconds)}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
+  }
+
+  // ---- Table Search & Filter Event Listeners ----
+  document.addEventListener('DOMContentLoaded', () => {
     init();
-  }
+
+    if (dom.camerasViewSearch) {
+      dom.camerasViewSearch.addEventListener('input', renderCamerasTable);
+    }
+    if (dom.incidentsStatusFilter) {
+      dom.incidentsStatusFilter.addEventListener('change', renderIncidentsTable);
+    }
+    if (dom.incidentsSeverityFilter) {
+      dom.incidentsSeverityFilter.addEventListener('change', renderIncidentsTable);
+    }
+    if (dom.refreshAnalyticsBtn) {
+      dom.refreshAnalyticsBtn.addEventListener('click', () => loadAnalytics().then(renderAnalyticsView));
+    }
+  });
 })();

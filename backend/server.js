@@ -3,9 +3,11 @@
  *
  * Express server with:
  *   - MongoDB Atlas connection via GridFS
- *   - Camera list and video streaming API
- *   - Static file serving for the frontend
- *   - CORS support
+ *   - Camera list, status, and Range-capable video streaming
+ *   - OpenRouter AI Visual Analysis service
+ *   - Incident management lifecycle and simulated demo scenarios
+ *   - Interactive venue map endpoints and operational analytics
+ *   - Static dashboard serving and graceful shutdown
  */
 
 require('dotenv').config();
@@ -13,26 +15,39 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { connectDB, closeDB } = require('./db/connection');
+const { initializeCollections } = require('./db/repositories');
+
+// Route modules
 const camerasRouter = require('./routes/cameras');
+const incidentsRouter = require('./routes/incidents');
+const analysisRouter = require('./routes/analysis');
+const analyticsRouter = require('./routes/analytics');
+const settingsRouter = require('./routes/settings');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+// Increased body limit to support base64 sampled video frames for AI analysis
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Serve frontend static files from ../frontend/
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// API routes
+// API Routes
 app.use('/api/cameras', camerasRouter);
+app.use('/api/incidents', incidentsRouter);
+app.use('/api/analysis', analysisRouter);
+app.use('/api/analytics', analyticsRouter);
+app.use('/api/settings', settingsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'PreSense Backend',
+    service: 'PreSense CCTV Intelligence Backend',
     timestamp: new Date().toISOString(),
   });
 });
@@ -45,12 +60,18 @@ app.get('*', (req, res) => {
 // Start server
 async function start() {
   try {
-    // Connect to MongoDB first
+    // Connect to MongoDB Atlas
     await connectDB();
+
+    // Initialize incident and report collections & indexes
+    await initializeCollections();
 
     app.listen(PORT, () => {
       console.log(`\n🚀 PreSense server running at http://localhost:${PORT}`);
-      console.log(`📡 API available at http://localhost:${PORT}/api/cameras\n`);
+      console.log(`📡 Cameras API:   http://localhost:${PORT}/api/cameras`);
+      console.log(`📡 Incidents API: http://localhost:${PORT}/api/incidents`);
+      console.log(`📡 Analysis API:  http://localhost:${PORT}/api/analysis/analyze`);
+      console.log(`📡 Analytics API: http://localhost:${PORT}/api/analytics\n`);
     });
   } catch (err) {
     console.error('❌ Failed to start server:', err.message);

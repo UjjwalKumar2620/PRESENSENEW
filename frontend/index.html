@@ -3,180 +3,752 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="PreSense — AI-powered surveillance monitoring system with real-time camera feeds and intelligent threat detection." />
-  <title>PreSense — Intelligent Surveillance Dashboard</title>
+  <meta name="description" content="PreSense — AI-Powered CCTV Monitoring & Rapid Crisis Response Dashboard for Transit Hubs and Crowded Public Environments." />
+  <title>PreSense — AI-Powered CCTV Monitoring & Crisis Response</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
-  <!-- Ambient Background -->
-  <div class="ambient-bg">
-    <div class="ambient-orb ambient-orb-1"></div>
-    <div class="ambient-orb ambient-orb-2"></div>
-    <div class="ambient-orb ambient-orb-3"></div>
-  </div>
-
-  <!-- Header -->
-  <header class="header" id="header">
-    <div class="header-inner">
-      <div class="logo-group">
-        <div class="logo-icon" id="logo-icon">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="14" stroke="url(#logoGrad)" stroke-width="2.5" />
-            <circle cx="16" cy="16" r="8" stroke="url(#logoGrad)" stroke-width="2" opacity="0.7" />
-            <circle cx="16" cy="16" r="3" fill="url(#logoGrad)" />
-            <defs>
-              <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stop-color="#6366f1" />
-                <stop offset="100%" stop-color="#06b6d4" />
-              </linearGradient>
-            </defs>
+<body class="soc-body">
+  <!-- Top Global Header -->
+  <header class="soc-topbar" id="soc-topbar">
+    <div class="topbar-left">
+      <div class="brand-block">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="5" fill="#ff6b00" />
+            <circle cx="12" cy="12" r="5" stroke="#ffffff" stroke-width="2.5" />
+            <circle cx="12" cy="12" r="1.5" fill="#ffffff" />
           </svg>
         </div>
-        <div class="logo-text">
-          <h1 class="logo-title">PreSense</h1>
-          <span class="logo-subtitle">Intelligent Surveillance</span>
+        <div class="brand-titles">
+          <span class="brand-name">PreSense</span>
+          <span class="brand-tag">CRISIS RESPONSE SOC</span>
         </div>
       </div>
-      <nav class="header-nav">
-        <div class="status-pill" id="status-pill">
-          <span class="status-dot"></span>
-          <span class="status-text">Connecting...</span>
-        </div>
-        <div class="nav-divider"></div>
-        <span class="header-timestamp" id="header-timestamp"></span>
-      </nav>
+      <div class="station-selector">
+        <span class="station-icon">🚉</span>
+        <span class="station-title">Central Metro Terminal • Sector 4</span>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="global-search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="camera-search-input" placeholder="Search cameras, zones, or IDs (e.g. CAM-03, Concourse)..." />
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="sim-launcher-btn" id="open-sim-modal-btn" title="Launch Demo Incident Scenarios">
+        <span class="sim-pulse"></span>
+        <span>Simulate Demo Incident</span>
+      </button>
+
+      <div class="mode-badge" title="Prerecorded video demonstration mode">
+        <span class="badge-dot demo-dot"></span>
+        <span>PRERECORDED DEMO</span>
+      </div>
+
+      <div class="status-indicator-badge connected" id="system-status-badge">
+        <span class="badge-dot green-dot"></span>
+        <span id="system-status-text">ATLAS CONNECTED</span>
+      </div>
+
+      <div class="clock-display" id="clock-display">00:00:00 UTC</div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="main" id="main">
-    <!-- Dashboard Stats Bar -->
-    <section class="stats-bar" id="stats-bar">
-      <div class="stat-card">
-        <div class="stat-icon">
+  <!-- Main Layout Container: Slim Sidebar + Dynamic Content -->
+  <div class="soc-layout">
+    <!-- Slim Vertical Sidebar -->
+    <aside class="soc-sidebar" id="soc-sidebar">
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          <span class="nav-label">Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-view="cameras" id="nav-cameras">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
             <circle cx="12" cy="13" r="4"/>
           </svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value" id="stat-total">—</span>
-          <span class="stat-label">Total Cameras</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon stat-icon--active">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="23 7 16 12 23 17 23 7"/>
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-          </svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value" id="stat-available">—</span>
-          <span class="stat-label">Feeds Available</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon stat-icon--info">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value" id="stat-resolution">—</span>
-          <span class="stat-label">Max Resolution</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon stat-icon--warn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value" id="stat-mode">DEMO</span>
-          <span class="stat-label">Feed Mode</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section Header -->
-    <section class="section-header">
-      <h2 class="section-title">Camera Grid</h2>
-      <div class="section-controls">
-        <span class="demo-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Recorded Demo Feeds
-        </span>
-      </div>
-    </section>
-
-    <!-- Camera Grid -->
-    <section class="camera-grid" id="camera-grid">
-      <!-- Populated by JavaScript -->
-    </section>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loading-overlay">
-      <div class="loading-spinner">
-        <div class="spinner-ring"></div>
-        <div class="spinner-ring spinner-ring-inner"></div>
-      </div>
-      <p class="loading-text">Initializing camera feeds...</p>
-    </div>
-
-    <!-- Error Banner -->
-    <div class="error-banner" id="error-banner" hidden>
-      <div class="error-inner">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        <div class="error-content">
-          <strong class="error-title">Connection Error</strong>
-          <span class="error-message" id="error-message">Unable to reach the server.</span>
-        </div>
-        <button class="error-retry" id="error-retry">Retry</button>
-      </div>
-    </div>
-  </main>
-
-  <!-- Expanded View Modal -->
-  <div class="modal-overlay" id="modal-overlay" hidden>
-    <div class="modal" id="modal">
-      <div class="modal-header">
-        <div class="modal-camera-info">
-          <h3 class="modal-camera-name" id="modal-camera-name"></h3>
-          <span class="modal-camera-meta" id="modal-camera-meta"></span>
-        </div>
-        <button class="modal-close" id="modal-close" aria-label="Close expanded view">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <span class="nav-label">Cameras</span>
+          <span class="nav-badge" id="sidebar-cam-count">9</span>
         </button>
+
+        <button class="nav-item" data-view="venue-map" id="nav-venue-map">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+          <span class="nav-label">Venue Map</span>
+        </button>
+
+        <button class="nav-item" data-view="incidents" id="nav-incidents">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span class="nav-label">Incidents</span>
+          <span class="nav-badge alert-count" id="sidebar-incident-count">3</span>
+        </button>
+
+        <button class="nav-item" data-view="analytics" id="nav-analytics">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span class="nav-label">Analytics</span>
+        </button>
+
+        <button class="nav-item" data-view="settings" id="nav-settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="nav-label">Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-mini-info">
+          <span class="version-tag">v2.4 Core</span>
+          <span class="gridfs-tag" id="sidebar-gridfs-status">GridFS Active</span>
+        </div>
       </div>
-      <div class="modal-body">
-        <video class="modal-video" id="modal-video" controls autoplay loop muted></video>
+    </aside>
+
+    <!-- Main Workspace Content Area -->
+    <main class="soc-main" id="soc-main">
+
+      <!-- ================= VIEW 1: MAIN DASHBOARD ================= -->
+      <section class="view-panel active" id="view-dashboard">
+        <!-- Top KPI Cards Bar -->
+        <div class="kpi-cards-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-green">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value" id="kpi-cameras-online">9 / 9</div>
+              <div class="kpi-label">Cameras Online & Streaming</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-blue">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value" id="kpi-incidents-today">4</div>
+              <div class="kpi-label">Incidents Today</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 22 22 22"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value" id="kpi-active-alerts">4</div>
+              <div class="kpi-label">Active Operational Alerts</div>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-card-critical">
+            <div class="kpi-icon-wrap kpi-red">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value" id="kpi-critical-alerts">1</div>
+              <div class="kpi-label">Level 3 Critical Alerts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Split: 3x3 Camera Grid (Left) + Active Alerts Panel (Right) -->
+        <div class="dashboard-split">
+          <!-- Left: 3x3 Live CCTV Grid -->
+          <div class="camera-monitor-container">
+            <div class="section-subbar">
+              <div class="section-title-wrap">
+                <h2 class="section-heading">CCTV Live Feeds (3×3 Grid)</h2>
+                <span class="section-subtext">Continuous streaming from MongoDB Atlas GridFS • HTTP 206 Range Seekable</span>
+              </div>
+              <div class="feed-controls">
+                <button class="small-ctrl-btn" id="mute-all-btn" title="Toggle audio on active player">Muted</button>
+                <button class="small-ctrl-btn" id="refresh-grid-btn" title="Refresh feeds">Sync Feeds</button>
+              </div>
+            </div>
+
+            <!-- The 3x3 Camera Grid -->
+            <div class="cctv-grid-3x3" id="cctv-grid">
+              <!-- Dynamically populated with 9 camera tiles -->
+            </div>
+          </div>
+
+          <!-- Right: Active Alert Panel -->
+          <aside class="alerts-sidebar-panel" id="alerts-panel">
+            <div class="alerts-panel-header">
+              <div class="alerts-title-row">
+                <div class="alerts-heading">
+                  <span class="alert-bell-icon">🚨</span>
+                  <h3>Active Incident Alerts</h3>
+                </div>
+                <span class="active-pill" id="alerts-count-badge">4 Active</span>
+              </div>
+
+              <!-- Severity Filter Pills -->
+              <div class="alert-filter-pills" id="alert-filter-pills">
+                <button class="filter-pill active" data-filter="All">All</button>
+                <button class="filter-pill pill-emergency" data-filter="Emergency">Level 3 (Emerg)</button>
+                <button class="filter-pill pill-respond" data-filter="Respond">Level 2 (Resp)</button>
+                <button class="filter-pill pill-observe" data-filter="Observe">Level 1 (Obs)</button>
+              </div>
+            </div>
+
+            <!-- List of Alert Cards -->
+            <div class="alerts-cards-list" id="alerts-cards-list">
+              <!-- Populated dynamically -->
+            </div>
+
+            <!-- Quick Demo Incident Trigger Bar at bottom of alert panel -->
+            <div class="alerts-panel-footer">
+              <span class="footer-hint">Test Scenario Triggers:</span>
+              <div class="quick-sim-buttons">
+                <button class="btn-quick-sim" data-scenario="person_on_track" title="Level 3: Person on track (CAM-08)">Track Intrusion (L3)</button>
+                <button class="btn-quick-sim" data-scenario="unattended_object" title="Level 1: Unattended Bag (CAM-03)">Unattended Bag (L1)</button>
+                <button class="btn-quick-sim" data-scenario="restricted_zone" title="Level 2: Vault Intrusion (CAM-04)">Vault Breach (L2)</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2: CAMERAS DIRECTORY ================= -->
+      <section class="view-panel" id="view-cameras">
+        <div class="view-header-bar">
+          <div>
+            <h2 class="view-heading">Camera Directory & Source Status</h2>
+            <p class="view-description">All 9 CCTV stations with streaming health, resolution, MongoDB GridFS references, and assigned zones.</p>
+          </div>
+          <div class="search-input-wrap">
+            <input type="text" class="input-field" id="cameras-view-search" placeholder="Filter camera list..." />
+          </div>
+        </div>
+
+        <div class="cameras-table-wrap">
+          <table class="soc-table" id="cameras-table">
+            <thead>
+              <tr>
+                <th>Camera ID</th>
+                <th>Display Name</th>
+                <th>Zone / Area</th>
+                <th>Resolution & FPS</th>
+                <th>Source Type</th>
+                <th>GridFS File ID</th>
+                <th>Stream Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="cameras-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: VENUE MAP ================= -->
+      <section class="view-panel" id="view-venue-map">
+        <div class="view-header-bar">
+          <div>
+            <h2 class="view-heading">Interactive Transit Station Floor Plan</h2>
+            <p class="view-description">Schematic blueprint of Central Metro Terminal with camera marker coverage cones and real-time incident pins.</p>
+          </div>
+          <div class="map-legend">
+            <span class="legend-item"><span class="legend-dot dot-camera"></span> Camera Location</span>
+            <span class="legend-item"><span class="legend-dot dot-emergency"></span> Level 3 Emergency</span>
+            <span class="legend-item"><span class="legend-dot dot-respond"></span> Level 2 Respond</span>
+            <span class="legend-item"><span class="legend-dot dot-observe"></span> Level 1 Observe</span>
+          </div>
+        </div>
+
+        <div class="venue-map-workspace">
+          <!-- The SVG Interactive Blueprint -->
+          <div class="venue-map-svg-wrap" id="venue-map-svg-wrap">
+            <!-- Custom Interactive Station SVG injected by JS -->
+          </div>
+
+          <!-- Side details panel for selected camera on map -->
+          <div class="venue-map-sidebar" id="map-selection-panel">
+            <div class="map-selection-card">
+              <div class="map-card-header">
+                <span class="map-card-id" id="map-card-id">SELECT A CAMERA</span>
+                <span class="map-card-badge" id="map-card-badge">READY</span>
+              </div>
+              <h3 class="map-card-name" id="map-card-name">Click any camera pin on the schematic</h3>
+              <p class="map-card-zone" id="map-card-zone">—</p>
+              
+              <div class="map-card-preview-wrap">
+                <video id="map-card-video" class="map-card-video" muted loop playsinline></video>
+                <div class="no-preview-overlay" id="map-no-preview">Click a camera pin on the map to preview live feed</div>
+              </div>
+
+              <div class="map-card-actions">
+                <button class="btn-primary" id="map-open-expanded-btn" disabled>Open Investigation Player</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 4: INCIDENTS LOG ================= -->
+      <section class="view-panel" id="view-incidents">
+        <div class="view-header-bar">
+          <div>
+            <h2 class="view-heading">Incident Management & Audit Log</h2>
+            <p class="view-description">Verified situational records, AI observations, and operator triage lifecycle.</p>
+          </div>
+          <div class="filter-actions-group">
+            <select class="select-field" id="incidents-status-filter">
+              <option value="All">All Statuses</option>
+              <option value="New">New</option>
+              <option value="Acknowledged">Acknowledged</option>
+              <option value="Assigned">Assigned</option>
+              <option value="Resolved">Resolved</option>
+              <option value="False Alarm">False Alarm</option>
+            </select>
+            <select class="select-field" id="incidents-severity-filter">
+              <option value="All">All Severities</option>
+              <option value="Emergency">Level 3: Emergency</option>
+              <option value="Respond">Level 2: Respond</option>
+              <option value="Observe">Level 1: Observe</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="incidents-table-wrap">
+          <table class="soc-table" id="incidents-table">
+            <thead>
+              <tr>
+                <th>Incident ID</th>
+                <th>Timestamp</th>
+                <th>Camera & Zone</th>
+                <th>Event Type</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Evidence Reference</th>
+                <th>Lifecycle Actions</th>
+              </tr>
+            </thead>
+            <tbody id="incidents-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 5: ANALYTICS ================= -->
+      <section class="view-panel" id="view-analytics">
+        <div class="view-header-bar">
+          <div>
+            <h2 class="view-heading">Operational Safety Analytics</h2>
+            <p class="view-description">Aggregated metrics derived from live incident database and camera streaming health.</p>
+          </div>
+          <button class="btn-secondary" id="refresh-analytics-btn">Refresh Analytics</button>
+        </div>
+
+        <div class="analytics-metrics-grid">
+          <div class="metric-box">
+            <span class="metric-num" id="an-total-incidents">0</span>
+            <span class="metric-label">Total Recorded Incidents</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num text-red" id="an-critical-count">0</span>
+            <span class="metric-label">Emergency Situations</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num text-amber" id="an-respond-count">0</span>
+            <span class="metric-label">Elevated Respond Alerts</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num text-blue" id="an-observe-count">0</span>
+            <span class="metric-label">Routine Observations</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num text-green" id="an-avg-response">0m</span>
+            <span class="metric-label">Avg Operator Triage Time</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num" id="an-availability">100%</span>
+            <span class="metric-label">CCTV System Availability</span>
+          </div>
+        </div>
+
+        <div class="analytics-charts-grid">
+          <div class="chart-panel">
+            <h3 class="chart-title">Incidents by Event Category</h3>
+            <div class="bar-chart-container" id="chart-by-category"></div>
+          </div>
+
+          <div class="chart-panel">
+            <h3 class="chart-title">Incident Distribution Across Cameras</h3>
+            <div class="bar-chart-container" id="chart-by-camera"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 6: SETTINGS ================= -->
+      <section class="view-panel" id="view-settings">
+        <div class="view-header-bar">
+          <div>
+            <h2 class="view-heading">System Settings & Health Status</h2>
+            <p class="view-description">OpenRouter AI model settings, MongoDB Atlas GridFS connection, and environment configuration.</p>
+          </div>
+        </div>
+
+        <div class="settings-cards-grid">
+          <div class="settings-card">
+            <h3 class="settings-card-title">OpenRouter Vision Integration</h3>
+            <div class="setting-row">
+              <span class="setting-key">Active Model:</span>
+              <span class="setting-val mono" id="set-ai-model">openai/gpt-4o-mini</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">API Key Status:</span>
+              <span class="setting-val badge-ok" id="set-ai-key-status">CONFIGURED (REDACTED)</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Analysis Windows:</span>
+              <span class="setting-val">10 Minutes, 20 Minutes (Bounded Frame Sampling)</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Ethical Guardrails:</span>
+              <span class="setting-val text-green">ENFORCED (No intent inferences, masks exempt)</span>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3 class="settings-card-title">MongoDB Atlas & GridFS Storage</h3>
+            <div class="setting-row">
+              <span class="setting-key">Cluster Status:</span>
+              <span class="setting-val badge-ok" id="set-mongo-status">CONNECTED</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Database Name:</span>
+              <span class="setting-val mono">presense</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">GridFS Bucket:</span>
+              <span class="setting-val mono">videos (videos.files, videos.chunks)</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Existing GridFS Videos:</span>
+              <span class="setting-val mono" id="set-gridfs-count">7 files verified (460MB raw)</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Streaming Protocol:</span>
+              <span class="setting-val">HTTP 206 Partial Content (RFC 7233 Range)</span>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3 class="settings-card-title">Prototype Simulation Settings</h3>
+            <div class="setting-row">
+              <span class="setting-key">Demonstration Mode:</span>
+              <span class="setting-val badge-warn">SIMULATED DEMO ACTIVE</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Video Content Notice:</span>
+              <span class="setting-val text-muted">Prerecorded CCTV sample loops. Not live sensor feeds.</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-key">Total Active Cameras:</span>
+              <span class="setting-val mono">9 Dedicated Feeds</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= EXPANDED CAMERA INVESTIGATION MODAL ================= -->
+  <div class="modal-backdrop" id="investigation-modal" hidden>
+    <div class="investigation-dialog">
+      <!-- Modal Top Bar -->
+      <div class="investigation-topbar">
+        <div class="investigation-cam-info">
+          <span class="modal-cam-badge" id="inv-modal-id">CAM-01</span>
+          <div>
+            <h2 class="modal-cam-name" id="inv-modal-name">Entrance Concourse Cam 1</h2>
+            <span class="modal-cam-zone" id="inv-modal-zone">Entrance & Ticket Hall • MongoDB Atlas GridFS</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="close-investigation-btn" aria-label="Close Investigation">✕</button>
+      </div>
+
+      <!-- Investigation Content Split: Video Player (Left) + AI Investigation (Right) -->
+      <div class="investigation-body">
+        <!-- Left: Full Video Feed (CCTV Surveillance Monitor View - No media player controls) -->
+        <div class="investigation-player-column">
+          <div class="large-video-wrapper cctv-monitor-wrapper">
+            <video id="investigation-video" class="investigation-video-element" autoplay loop muted playsinline></video>
+            <!-- Offscreen Canvas for Frame Sampling -->
+            <canvas id="sampling-canvas" style="display:none;"></canvas>
+            
+            <!-- CCTV Surveillance Monitor HUD -->
+            <div class="cctv-hud-top-left">
+              <span class="hud-cam-tag" id="hud-cam-id">CAM-01</span>
+              <span class="hud-zone-tag" id="hud-cam-zone">ZONE: ENTRANCE CONCOURSE</span>
+            </div>
+
+            <div class="cctv-hud-top-right">
+              <span class="hud-live-tag"><span class="dot-rec"></span> LIVE CCTV FEED</span>
+              <span class="hud-source-type" id="inv-source-tag">ATLAS GRIDFS STREAM</span>
+            </div>
+
+            <div class="cctv-hud-bottom-left">
+              <span class="hud-timestamp" id="hud-live-timestamp">2026-10-11 04:05:00 UTC</span>
+              <span class="hud-quality" id="inv-meta-res">1920×1080 @ 25 FPS</span>
+            </div>
+
+            <!-- CCTV Corner Targeting Brackets -->
+            <div class="cctv-bracket bracket-tl"></div>
+            <div class="cctv-bracket bracket-tr"></div>
+            <div class="cctv-bracket bracket-bl"></div>
+            <div class="cctv-bracket bracket-br"></div>
+          </div>
+
+          <div class="player-status-bar">
+            <div class="status-item">
+              <span class="item-label">Feed Status:</span>
+              <span class="item-value text-green">● CONTINUOUS ACTIVE LOOP</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">Surveillance Hub:</span>
+              <span class="item-value">Sector 4 Transit SOC</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">Session Elapsed:</span>
+              <span class="item-value" id="inv-session-duration">00:45</span>
+            </div>
+          </div>
+
+          <!-- Camera Recent Incidents -->
+          <div class="camera-incidents-history">
+            <h4 class="history-title">Camera Security Logs & Flags</h4>
+            <div class="history-list" id="inv-camera-incidents-list">
+              <div class="history-empty">No active security anomalies flagged for this feed.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Analysis Panel -->
+        <div class="investigation-ai-column">
+          <div class="ai-panel-header">
+            <div class="ai-title-wrap">
+              <span class="ai-icon">⚡</span>
+              <div>
+                <h3>AI Video Analysis</h3>
+                <span class="ai-subtitle">OpenRouter Multi-Frame Vision Intelligence</span>
+              </div>
+            </div>
+            <span class="ai-model-tag" id="inv-model-tag">openai/gpt-4o-mini</span>
+          </div>
+
+          <div class="ai-prompt-box">
+            <p class="ai-instruction-text">
+              Inspect this camera feed in real time. OpenRouter vision analyzes live video frames to report what is happening, identify passenger flow, and detect any security or safety anomalies.
+            </p>
+            <button class="btn-ai-analyze-main" id="btn-analyze-main">
+              <span class="ai-btn-icon">👁️</span>
+              <div class="ai-btn-text">
+                <strong>AI ANALYZE THIS VIDEO</strong>
+                <span>Inspect what's happening & generate situational breakdown</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Optional Window Selector -->
+          <div class="ai-window-row">
+            <span class="window-label">Observation Window:</span>
+            <div class="window-pills">
+              <button class="win-pill active" id="btn-analyze-10" data-window="10">10 Min Window</button>
+              <button class="win-pill" id="btn-analyze-20" data-window="20">20 Min Window</button>
+            </div>
+          </div>
+
+          <!-- Analysis Loading State -->
+          <div class="ai-loading-state" id="ai-loading-state" hidden>
+            <div class="spinner-radar"></div>
+            <div class="loading-msg-wrap">
+              <strong class="loading-msg-title">AI is analyzing this camera feed...</strong>
+              <span class="loading-msg-sub">Sampling video frames & querying OpenRouter vision model. Reading scene context...</span>
+            </div>
+          </div>
+
+          <!-- Analysis Result Structured Report -->
+          <div class="ai-report-container" id="ai-report-container" hidden>
+            <!-- Prominent "What is Happening" Highlight Card -->
+            <div class="report-section what-is-happening-card" id="rep-happening-card">
+              <div class="happening-header">
+                <span class="happening-badge">LIVE SCENE BREAKDOWN</span>
+                <span class="report-pill pill-time" id="rep-time-pill">Just now</span>
+              </div>
+              <p class="happening-summary-text" id="rep-happening-text">
+                Analyzing feed...
+              </p>
+            </div>
+            <!-- Section A: Summary -->
+            <div class="report-section report-summary-box">
+              <div class="report-badge-row">
+                <span class="report-pill" id="rep-window-pill">10 Min Window</span>
+                <span class="report-pill pill-source" id="rep-source-pill">Atlas GridFS</span>
+                <span class="report-pill pill-time" id="rep-time-pill">Just now</span>
+              </div>
+              <div class="report-coverage-notice" id="rep-coverage-notice"></div>
+            </div>
+
+            <!-- Section D: Risk Assessment -->
+            <div class="report-section risk-card" id="rep-risk-card">
+              <div class="risk-level-header">
+                <span class="risk-level-badge" id="rep-risk-badge">LEVEL 1: OBSERVE</span>
+                <span class="risk-verify-tag">OPERATOR VERIFICATION REQUIRED</span>
+              </div>
+              <p class="risk-explanation" id="rep-risk-explanation"></p>
+            </div>
+
+            <!-- Section B: Observed Activity -->
+            <div class="report-section">
+              <h5 class="report-sec-title">B. Observed Activity</h5>
+              <p class="report-sec-body" id="rep-observed-overview"></p>
+              <div class="report-meta-grid">
+                <div><strong>Crowd Flow:</strong> <span id="rep-crowd-flow"></span></div>
+                <div><strong>Visibility:</strong> <span id="rep-visibility"></span></div>
+              </div>
+            </div>
+
+            <!-- Section C: Potential Incidents -->
+            <div class="report-section">
+              <h5 class="report-sec-title">C. Potential Incidents & Evidence</h5>
+              <div id="rep-incidents-list"></div>
+            </div>
+
+            <!-- Section E: Recommended Action -->
+            <div class="report-section">
+              <h5 class="report-sec-title">E. Recommended Operational Action</h5>
+              <div class="action-box">
+                <p><strong>Operator Verification:</strong> <span id="rep-operator-action"></span></p>
+                <p><strong>Team Dispatch:</strong> <span id="rep-dispatch-action"></span></p>
+              </div>
+            </div>
+
+            <!-- Section F: Limitations -->
+            <div class="report-section limitations-box">
+              <h5 class="report-sec-title">F. AI Analysis Limitations</h5>
+              <p id="rep-limitations-text" class="limitations-text"></p>
+            </div>
+
+            <!-- Button to convert AI finding into a logged Incident -->
+            <div class="report-action-footer">
+              <button class="btn-create-incident-from-ai" id="btn-create-incident-ai">
+                Log Findings as Formal Incident
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>&copy; 2026 PreSense — Intelligent Surveillance System. All feeds are prerecorded demonstrations.</p>
-  </footer>
+  <!-- ================= SCENARIO LAUNCHER MODAL ================= -->
+  <div class="modal-backdrop" id="sim-modal" hidden>
+    <div class="sim-dialog">
+      <div class="sim-dialog-header">
+        <div class="sim-title-group">
+          <span class="sim-modal-icon">🚨</span>
+          <h3>Simulated Incident Scenario Launcher</h3>
+        </div>
+        <button class="modal-close-btn" id="close-sim-btn">✕</button>
+      </div>
+
+      <p class="sim-dialog-desc">
+        Launch repeatable demonstration events to test PreSense crisis detection workflows, alert banners, map highlights, and operator triage without needing real-world transit emergencies.
+      </p>
+
+      <div class="sim-cards-grid">
+        <div class="scenario-card" data-scenario="person_on_track">
+          <div class="scenario-top">
+            <span class="scen-badge badge-emergency">LEVEL 3: EMERGENCY</span>
+            <span class="scen-cam">CAM-08 • Platform 1</span>
+          </div>
+          <h4 class="scen-title">Person in Track Clearance Zone</h4>
+          <p class="scen-desc">Passenger crosses the platform safety threshold and steps onto the track clearance bed. Immediate train deceleration alert.</p>
+          <button class="btn-launch-scen">Launch Scenario</button>
+        </div>
+
+        <div class="scenario-card" data-scenario="fight_activity">
+          <div class="scenario-top">
+            <span class="scen-badge badge-respond">LEVEL 2: RESPOND</span>
+            <span class="scen-cam">CAM-05 • Waiting Lounge</span>
+          </div>
+          <h4 class="scen-title">Physical Altercation Escalation</h4>
+          <p class="scen-desc">Sudden physical dispute and pushing among transit passengers near passenger seating rows. Platform security intervention required.</p>
+          <button class="btn-launch-scen">Launch Scenario</button>
+        </div>
+
+        <div class="scenario-card" data-scenario="restricted_zone">
+          <div class="scenario-top">
+            <span class="scen-badge badge-respond">LEVEL 2: RESPOND</span>
+            <span class="scen-cam">CAM-04 • Tech Vault</span>
+          </div>
+          <h4 class="scen-title">Critical Infrastructure Breach</h4>
+          <p class="scen-desc">Individual enters high-security server room and operational equipment corridor without valid biometric clearance.</p>
+          <button class="btn-launch-scen">Launch Scenario</button>
+        </div>
+
+        <div class="scenario-card" data-scenario="unattended_object">
+          <div class="scenario-top">
+            <span class="scen-badge badge-observe">LEVEL 1: OBSERVE</span>
+            <span class="scen-cam">CAM-03 • Central Concourse</span>
+          </div>
+          <h4 class="scen-title">Unattended Luggage Package</h4>
+          <p class="scen-desc">Stationary hard-shell luggage left beside Concourse Turnstiles for >10 minutes without owner in proximity.</p>
+          <button class="btn-launch-scen">Launch Scenario</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="js/app.js"></script>
 </body>
