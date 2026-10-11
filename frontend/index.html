@@ -12,7 +12,7 @@
 </head>
 <body class="soc-body">
   <!-- ================= HERO LANDING PAGE: GOLD & OBSIDIAN BLACK THEME ================= -->
-  <div id="landing-page" class="landing-page-wrap">
+  <div id="landing-page" class="landing-page-wrap" style="display: none;">
     <!-- Landing Top Navigation -->
     <header class="landing-nav">
       <div class="landing-nav-left">
@@ -276,7 +276,7 @@
   </div>
 
   <!-- ================= DASHBOARD APP CONTAINER ================= -->
-  <div id="dashboard-app" class="dashboard-app-wrap" style="display: none;">
+  <div id="dashboard-app" class="dashboard-app-wrap">
     <!-- Top Global Header -->
     <header class="soc-topbar" id="soc-topbar">
       <div class="topbar-left">
@@ -340,18 +340,6 @@
         <div class="clock-display-block">
           <div class="clock-time" id="clock-display">04:45:23 UTC</div>
           <div class="clock-date" id="date-display">Oct 10, 2026</div>
-        </div>
-
-        <button class="sim-launcher-btn" id="btn-return-landing" title="Return to Hero Landing Page" style="border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">
-          <span>🏠</span>
-          <span>Landing Page</span>
-        </button>
-
-        <div class="user-avatar-btn" title="SOC Security Officer" id="topbar-user-avatar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
         </div>
       </div>
     </header>
@@ -578,6 +566,12 @@
                     </svg>
                     <span>Mute All</span>
                   </button>
+                  <button class="ctrl-pill-btn cctv-scroll-btn" id="btn-scroll-cams" title="Scroll down to view CAM-07, CAM-08, CAM-09">
+                    <svg class="scroll-btn-icon" id="scroll-btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    <span id="scroll-btn-label">Scroll to CAM 7–9</span>
+                  </button>
                   <button class="grid-mode-btn" id="btn-fullscreen-grid" title="Fullscreen">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -586,19 +580,34 @@
                 </div>
               </div>
 
-            <!-- The 3x3 Camera Grid -->
-            <div class="cctv-grid-3x3" id="cctv-grid">
-              <!-- Dynamically populated with 9 camera tiles -->
+              <!-- Dedicated Scrollable Container for 9 Camera Feeds -->
+              <div class="cctv-scroll-container" id="cctv-scroll-container">
+                <!-- The 3x3 Camera Grid -->
+                <div class="cctv-grid-3x3" id="cctv-grid">
+                  <!-- Dynamically populated with 9 camera tiles -->
+                </div>
+
+                <!-- Floating Bottom Scroll Indicator for CAM 7-9 -->
+                <div class="cctv-scroll-indicator" id="cctv-scroll-indicator" title="Click to scroll to CAM 7–9">
+                  <span class="scroll-ind-dot"></span>
+                  <span class="scroll-ind-text" id="scroll-ind-text">Viewing CAM 1–6 • Click to scroll down to CAM 7–9</span>
+                  <span class="scroll-ind-arrow" id="scroll-ind-arrow">↓</span>
+                </div>
+              </div>
             </div>
-          </div>
 
           <!-- Right: Active Alert Panel -->
           <aside class="alerts-sidebar-panel" id="alerts-panel">
             <div class="alerts-panel-header">
               <div class="alerts-title-row">
                 <div class="alerts-heading">
-                  <span class="alert-bell-icon">🔔</span>
-                  <h3>Active Incident Alerts <span id="alerts-count-header">(5)</span></h3>
+                  <span class="alert-icon-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L1 21h22L12 2z" fill="#ef4444" />
+                      <path d="M12 9v4M12 17h.01" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <h3>Active Incident Alerts <span id="alerts-count-header" class="alerts-count-highlight">(5)</span></h3>
                 </div>
                 <a href="#incidents" class="view-all-link" id="link-view-all-alerts">View All →</a>
               </div>

@@ -228,7 +228,7 @@
       severityLevel: 2,
       status: 'New',
       timestamp: new Date(Date.now() - 1000 * 60 * 65).toISOString(),
-      description: 'Individual entered restricted access corridor outside Server Operations Vault without authorized badge.',
+      description: 'Individual entered restricted access corridor without authorized badge.',
       sourceType: 'simulated_demo',
       evidenceReference: 'CAM-04 Vault Corridor Frame 01:22',
       actionHistory: [
@@ -239,13 +239,13 @@
       incidentId: 'INC-2026-003',
       cameraId: 'CAM-08',
       cameraName: 'Platform 2 - Trackside South',
-      zone: 'Platform 2 - Trackside South',
+      zone: 'Platform 1 - Trackside North',
       eventType: 'Platform Yellow Line Intrusion',
       severity: 'Respond',
       severityLevel: 2,
       status: 'Acknowledged',
       timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString(),
-      description: 'Person detected leaning over platform edge into track clearance zone ahead of incoming express transit.',
+      description: 'Person detected leaning over platform edge ahead of incoming express.',
       sourceType: 'simulated_demo',
       evidenceReference: 'CAM-08 Platform Overlook Frame 03:15',
       actionHistory: [
@@ -257,13 +257,13 @@
       incidentId: 'INC-2026-004',
       cameraId: 'CAM-06',
       cameraName: 'West Stairwell & Footbridge Cam 6',
-      zone: 'West Stairwell Overbridge',
+      zone: 'West Stairwell. Overbridge',
       eventType: 'Crowd Congestion Surge',
       severity: 'Observe',
       severityLevel: 1,
       status: 'Assigned',
       timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-      description: 'High-density passenger bottleneck on stairwell leading to Platform 1 after train arrival.',
+      description: 'High-density passenger bottleneck on stairwell leading to Platform 1.',
       sourceType: 'simulated_demo',
       evidenceReference: 'CAM-06 Stairwell Frame 02:40',
       actionHistory: [
@@ -650,6 +650,13 @@
 
   function cacheDom() {
     dom.cctvGrid = document.getElementById('cctv-grid');
+    dom.cctvScrollContainer = document.getElementById('cctv-scroll-container');
+    dom.btnScrollCams = document.getElementById('btn-scroll-cams');
+    dom.scrollBtnIcon = document.getElementById('scroll-btn-icon');
+    dom.scrollBtnLabel = document.getElementById('scroll-btn-label');
+    dom.cctvScrollIndicator = document.getElementById('cctv-scroll-indicator');
+    dom.scrollIndText = document.getElementById('scroll-ind-text');
+    dom.scrollIndArrow = document.getElementById('scroll-ind-arrow');
     dom.alertsList = document.getElementById('alerts-cards-list');
     dom.alertsCountBadge = document.getElementById('alerts-count-badge');
     dom.alertsCountHeader = document.getElementById('alerts-count-header');
@@ -732,6 +739,7 @@
     setupSimulationLauncher();
     setupGlobalAutoplayKickstarter();
     setupLandingPage();
+    setupCctvScrollControls();
 
     // 1. Immediately render defaults (Guarantees zero blank screen in all deployments)
     renderAll();
@@ -1021,12 +1029,13 @@
       }
 
       // Bottom Overlay (Bold title, map pin + subtitle, expand icon)
+      const hasPin = !['CAM-01', 'CAM-03', 'CAM-04', 'CAM-05'].includes(camera.id);
       const bottomOverlay = document.createElement('div');
       bottomOverlay.className = 'tile-bottom-overlay';
       bottomOverlay.innerHTML = `
         <div class="tile-info-text">
           <span class="tile-name">${camMeta.title}</span>
-          <span class="tile-zone"><span class="zone-pin">📍</span> ${camMeta.sub}</span>
+          <span class="tile-zone">${hasPin ? '<span class="zone-pin">📍</span> ' : ''}${camMeta.sub}</span>
         </div>
         <div class="tile-expand-icon" title="Expand CCTV Feed">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1222,18 +1231,77 @@
       });
     }
 
-    // Check if session exists; default to landing page
+    // Default directly to dashboard view matching the reference design specification
     const existing = localStorage.getItem('presense_session');
     if (existing) {
       try {
         const parsed = JSON.parse(existing);
         enterDashboard(parsed.role, parsed.station);
       } catch (_) {
-        exitToLanding();
+        enterDashboard();
       }
     } else {
-      exitToLanding();
+      enterDashboard();
     }
+  }
+
+  // ================= DEDICATED CCTV VIDEO SCROLL CONTROLS =================
+  // Provides effortless, 1-click smooth scrolling to CAM-07, CAM-08, CAM-09
+  function setupCctvScrollControls() {
+    const scrollContainer = dom.cctvScrollContainer || document.getElementById('cctv-scroll-container');
+    const scrollBtn = dom.btnScrollCams || document.getElementById('btn-scroll-cams');
+    const scrollBtnIcon = dom.scrollBtnIcon || document.getElementById('scroll-btn-icon');
+    const scrollBtnLabel = dom.scrollBtnLabel || document.getElementById('scroll-btn-label');
+    const scrollIndicator = dom.cctvScrollIndicator || document.getElementById('cctv-scroll-indicator');
+    const scrollIndText = dom.scrollIndText || document.getElementById('scroll-ind-text');
+    const scrollIndArrow = dom.scrollIndArrow || document.getElementById('scroll-ind-arrow');
+
+    if (!scrollContainer) return;
+
+    function isScrolledDown() {
+      const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+      if (maxScroll <= 20) return false;
+      return scrollContainer.scrollTop > maxScroll * 0.4;
+    }
+
+    function updateScrollStateUI() {
+      const atBottom = isScrolledDown();
+      if (atBottom) {
+        if (scrollBtnLabel) scrollBtnLabel.textContent = 'Scroll to CAM 1–3';
+        if (scrollBtnIcon) scrollBtnIcon.innerHTML = '<polyline points="18 15 12 9 6 15"/>';
+        if (scrollIndText) scrollIndText.textContent = 'Viewing CAM 7–9 • Click to scroll back to CAM 1–3';
+        if (scrollIndArrow) scrollIndArrow.textContent = '↑';
+      } else {
+        if (scrollBtnLabel) scrollBtnLabel.textContent = 'Scroll to CAM 7–9';
+        if (scrollBtnIcon) scrollBtnIcon.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
+        if (scrollIndText) scrollIndText.textContent = 'Viewing CAM 1–6 • Click to scroll down to CAM 7–9';
+        if (scrollIndArrow) scrollIndArrow.textContent = '↓';
+      }
+    }
+
+    function toggleScroll() {
+      const atBottom = isScrolledDown();
+      if (atBottom) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Scroll directly down to reveal CAM-07, CAM-08, CAM-09 completely
+        scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+      }
+      setTimeout(updateScrollStateUI, 350);
+    }
+
+    if (scrollBtn) {
+      scrollBtn.addEventListener('click', toggleScroll);
+    }
+
+    if (scrollIndicator) {
+      scrollIndicator.addEventListener('click', toggleScroll);
+    }
+
+    scrollContainer.addEventListener('scroll', updateScrollStateUI, { passive: true });
+    
+    // Initial check
+    setTimeout(updateScrollStateUI, 300);
   }
 
   // Floating notification toast

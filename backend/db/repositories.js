@@ -41,7 +41,7 @@ const SEED_INCIDENTS = [
     severityLevel: 2,
     status: 'New',
     timestamp: new Date(Date.now() - 1000 * 60 * 65).toISOString(),
-    description: 'Individual entered restricted access corridor outside Server Operations Vault without authorized badge.',
+    description: 'Individual entered restricted access corridor without authorized badge.',
     sourceType: 'simulated_demo',
     evidenceReference: 'CAM-04 Vault Corridor Frame 01:22',
     actionHistory: [
@@ -52,13 +52,13 @@ const SEED_INCIDENTS = [
     incidentId: 'INC-2026-003',
     cameraId: 'CAM-08',
     cameraName: 'Platform 2 - Trackside South',
-    zone: 'Platform 1 • Trackside North',
+    zone: 'Platform 1 - Trackside North',
     eventType: 'Platform Yellow Line Intrusion',
     severity: 'Respond', // Level 2 Respond
     severityLevel: 2,
     status: 'Acknowledged',
     timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString(),
-    description: 'Person detected leaning over platform edge into track clearance zone ahead of incoming express transit.',
+    description: 'Person detected leaning over platform edge ahead of incoming express.',
     sourceType: 'simulated_demo',
     evidenceReference: 'CAM-08 Platform 1 Overlook Frame 03:15',
     actionHistory: [
@@ -70,13 +70,13 @@ const SEED_INCIDENTS = [
     incidentId: 'INC-2026-004',
     cameraId: 'CAM-06',
     cameraName: 'West Stairwell & Footbridge Cam 6',
-    zone: 'West Stairwell Overbridge',
+    zone: 'West Stairwell. Overbridge',
     eventType: 'Crowd Congestion Surge',
     severity: 'Observe', // Level 1 Observe
     severityLevel: 1,
     status: 'Assigned',
     timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    description: 'High-density passenger bottleneck on stairwell leading to Platform 1 after train arrival.',
+    description: 'High-density passenger bottleneck on stairwell leading to Platform 1.',
     sourceType: 'simulated_demo',
     evidenceReference: 'CAM-06 Stairwell Frame 02:40',
     actionHistory: [

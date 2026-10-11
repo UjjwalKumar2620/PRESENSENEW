@@ -368,8 +368,8 @@ body.soc-body.on-landing {
 }
 
 .nav-badge.alert-count {
-  background: #f59e0b;
-  color: #000000;
+  background: #ef4444;
+  color: #ffffff;
 }
 
 /* Sidebar Bottom Architectural Thumbnail & Status Card */
@@ -664,12 +664,117 @@ body.soc-body.on-landing {
   color: #ffffff;
 }
 
+/* Dedicated Scroll Control Button in Subbar */
+.ctrl-pill-btn.cctv-scroll-btn {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  font-weight: 700;
+  padding: 5px 12px;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ctrl-pill-btn.cctv-scroll-btn:hover {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+.scroll-btn-icon {
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+/* Dedicated Scrollable Container for 9 Cameras */
+.cctv-scroll-container {
+  position: relative;
+  max-height: calc(100vh - 215px);
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  padding-right: 4px;
+  padding-bottom: 24px;
+  scroll-behavior: smooth;
+  border-radius: 8px;
+}
+
+.cctv-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cctv-scroll-container::-webkit-scrollbar-track {
+  background: rgba(14, 18, 26, 0.85);
+  border-radius: 4px;
+}
+
+.cctv-scroll-container::-webkit-scrollbar-thumb {
+  background: #f59e0b;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.cctv-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #fbbf24;
+}
+
+/* Floating Bottom Scroll Indicator Pill */
+.cctv-scroll-indicator {
+  position: sticky;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  margin: 10px auto 0 auto;
+  width: fit-content;
+  max-width: 95%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(14, 18, 28, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65), 0 0 12px rgba(245, 158, 11, 0.2);
+  transition: all 0.2s ease;
+  z-index: 10;
+  user-select: none;
+}
+
+.cctv-scroll-indicator:hover {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: #f59e0b;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8), 0 0 16px rgba(245, 158, 11, 0.35);
+}
+
+.scroll-ind-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+.scroll-ind-arrow {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #f59e0b;
+  transition: transform 0.2s ease;
+}
+
 /* 3x3 Camera Grid */
 .cctv-grid-3x3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  min-height: 720px;
+  min-height: 680px;
 }
 
 .camera-tile {
@@ -875,13 +980,24 @@ body.soc-body.on-landing {
 .alerts-heading {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.alert-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .alerts-heading h3 {
   font-size: 0.88rem;
   font-weight: 700;
   color: #ffffff;
+}
+
+.alerts-count-highlight {
+  color: #ef4444 !important;
+  font-weight: 800;
 }
 
 .view-all-link {
