@@ -54,7 +54,7 @@
 
   /* Dimensions */
   --topbar-height: 56px;
-  --sidebar-width: 82px;
+  --sidebar-width: 175px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -72,15 +72,34 @@ body.soc-body {
   background-color: var(--bg-core);
   color: var(--text-main);
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
 }
 
+body.soc-body.on-landing {
+  overflow: auto !important;
+}
+
+/* Dashboard App Top-Level Wrapper */
+.dashboard-app-wrap {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column !important;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--bg-core);
+  flex: 1;
+}
+
 /* ================= TOP GLOBAL BAR ================= */
 .soc-topbar {
   height: var(--topbar-height);
+  width: 100%;
   background: var(--bg-topbar);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
@@ -268,12 +287,15 @@ body.soc-body {
 /* ================= MAIN LAYOUT ================= */
 .soc-layout {
   display: flex;
+  flex-direction: row !important;
   flex: 1;
   height: calc(100vh - var(--topbar-height));
+  min-height: 0;
+  width: 100%;
   overflow: hidden;
 }
 
-/* Slim Vertical Sidebar */
+/* Expanded Vertical Sidebar */
 .soc-sidebar {
   width: var(--sidebar-width);
   background: var(--bg-sidebar);
@@ -281,8 +303,10 @@ body.soc-body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 12px 6px;
+  padding: 14px 10px;
   flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .sidebar-nav {
@@ -293,11 +317,11 @@ body.soc-body {
 
 .nav-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 10px 4px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: 1px solid transparent;
@@ -305,6 +329,7 @@ body.soc-body {
   cursor: pointer;
   position: relative;
   transition: all 0.15s ease;
+  width: 100%;
 }
 
 .nav-item:hover {
@@ -325,21 +350,21 @@ body.soc-body {
 }
 
 .nav-label {
-  font-size: 0.65rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .nav-badge {
-  position: absolute;
-  top: 4px;
-  right: 10px;
+  margin-left: auto;
   background: var(--border-med);
   color: var(--text-main);
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 2px 7px;
   border-radius: 999px;
+  position: static;
 }
 
 .nav-badge.alert-count {

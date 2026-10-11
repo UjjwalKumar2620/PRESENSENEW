@@ -1144,15 +1144,24 @@
 
     function enterDashboard(userRole = 'Chief Commander Alex Vance', station = 'Central Metro Terminal • Sector 4') {
       if (landingPage) landingPage.style.display = 'none';
-      if (dashboardApp) dashboardApp.style.display = 'flex';
+      if (dashboardApp) {
+        dashboardApp.style.display = 'flex';
+      }
+      document.body.classList.remove('on-landing');
       document.body.style.overflow = 'hidden';
 
+      // Explicitly switch to dashboard view and fresh render
+      switchView('dashboard');
+      renderAll();
+
       // Ensure all videos play continuously
-      document.querySelectorAll('video').forEach((v) => {
-        v.muted = true;
-        v.defaultMuted = true;
-        v.play().catch(() => {});
-      });
+      setTimeout(() => {
+        document.querySelectorAll('video').forEach((v) => {
+          v.muted = true;
+          v.defaultMuted = true;
+          v.play().catch(() => {});
+        });
+      }, 50);
 
       // Show toast notification
       showToast(`Access Granted: ${userRole} authenticated for ${station}`, 'success');
@@ -1162,6 +1171,7 @@
     function exitToLanding() {
       if (dashboardApp) dashboardApp.style.display = 'none';
       if (landingPage) landingPage.style.display = 'flex';
+      document.body.classList.add('on-landing');
       document.body.style.overflow = 'auto';
       localStorage.removeItem('presense_session');
     }
