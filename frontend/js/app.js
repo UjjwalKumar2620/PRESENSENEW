@@ -731,6 +731,7 @@
     setupModalControls();
     setupSimulationLauncher();
     setupGlobalAutoplayKickstarter();
+    setupLandingPage();
 
     // 1. Immediately render defaults (Guarantees zero blank screen in all deployments)
     renderAll();
@@ -893,7 +894,19 @@
     renderAlertsPanel();
   }
 
-  // ================= 3x3 CCTV GRID (Continuous Looping Feeds) =================
+  // ================= 3x3 CCTV GRID (Continuous Looping Feeds Matching Reference Design) =================
+  const CAMERA_MAP = {
+    'CAM-01': { title: 'Entrance Concourse', sub: 'Entrance & Ticket Hall' },
+    'CAM-02': { title: 'North Transit Plaza', sub: 'Transit Plaza & Parking North' },
+    'CAM-03': { title: 'Main Corridor & Turnstiles', sub: 'Central Concourse Corridor' },
+    'CAM-04': { title: 'Operations & Server Vault', sub: 'Security Operations & Tech Vault' },
+    'CAM-05': { title: 'Passenger Waiting Lounge', sub: 'East Passenger Waiting Hall' },
+    'CAM-06': { title: 'West Stairwell & Footbridge', sub: 'West Stairwell Overbridge' },
+    'CAM-07': { title: 'Platform 1 - Trackside North', sub: 'Trackside Platform 1' },
+    'CAM-08': { title: 'Platform 2 - Trackside South', sub: 'Trackside Platform 2' },
+    'CAM-09': { title: 'Exit Gate - South Concourse', sub: 'South Concourse' }
+  };
+
   function renderCctvGrid() {
     if (!dom.cctvGrid) return;
     dom.cctvGrid.innerHTML = '';
@@ -917,34 +930,31 @@
       return;
     }
 
-    const currentTimestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-
     filteredCameras.forEach((camera) => {
+      const isCam08 = camera.id === 'CAM-08';
       const cameraIncidents = state.incidents.filter(
         (i) => i.cameraId === camera.id && i.status !== 'Resolved' && i.status !== 'False Alarm'
       );
-      let severityClass = '';
-      let severityBadge = '';
-
-      if (cameraIncidents.some((i) => i.severity === 'Emergency')) {
-        severityClass = 'has-emergency';
-        severityBadge = '<span class="tile-severity-badge badge-emergency">EMERGENCY</span>';
-      } else if (cameraIncidents.some((i) => i.severity === 'Respond')) {
-        severityClass = 'has-respond';
-        severityBadge = '<span class="tile-severity-badge badge-respond">RESPOND</span>';
-      } else if (cameraIncidents.some((i) => i.severity === 'Observe')) {
-        severityClass = 'has-observe';
-        severityBadge = '<span class="tile-severity-badge badge-observe">OBSERVE</span>';
+      
+      let severityClass = isCam08 ? 'has-emergency' : '';
+      if (!isCam08) {
+        if (cameraIncidents.some((i) => i.severity === 'Emergency')) {
+          severityClass = 'has-emergency';
+        } else if (cameraIncidents.some((i) => i.severity === 'Respond')) {
+          severityClass = 'has-respond';
+        } else if (cameraIncidents.some((i) => i.severity === 'Observe')) {
+          severityClass = 'has-observe';
+        }
       }
 
       const staticUrl = `/videos/${camera.id.toLowerCase()}.mp4`;
       const streamUrl = `/api/cameras/${camera.id}/stream`;
-      const sourceBadgeLabel = camera.source === 'gridfs' ? 'ATLAS GRIDFS' : 'DEMO FEED';
+      const camMeta = CAMERA_MAP[camera.id] || { title: camera.name, sub: camera.zone };
 
       const tile = document.createElement('div');
       tile.className = `camera-tile ${severityClass}`;
       tile.id = `tile-${camera.id}`;
-      tile.setAttribute('title', `Open live feed investigation for ${camera.id} (${camera.name})`);
+      tile.setAttribute('title', `Open live feed investigation for ${camera.id} (${camMeta.title})`);
 
       // Video element created with explicit properties to guarantee continuous loop
       const videoWrap = document.createElement('div');
@@ -990,27 +1000,36 @@
         }
       });
 
-      // Assemble HUD overlays on the tile
+      // Top Overlay (Matching reference image: CAM-XX + LIVE pill; CAM-08 has EMERGENCY badge)
       const topOverlay = document.createElement('div');
       topOverlay.className = 'tile-top-overlay';
-      topOverlay.innerHTML = `
-        <span class="tile-cam-id">${camera.id}</span>
-        <div class="tile-badges-row">
-          <span class="tile-rec-badge"><span class="dot-rec"></span> ${sourceBadgeLabel}</span>
-          ${severityBadge}
-        </div>
-      `;
+      if (isCam08) {
+        topOverlay.innerHTML = `
+          <div class="tile-top-left-badges">
+            <span class="tile-cam-id">CAM-08</span>
+            <span class="tile-live-badge live-red"><span class="dot-live dot-red"></span> LIVE</span>
+          </div>
+          <span class="tile-emergency-pill">EMERGENCY</span>
+        `;
+      } else {
+        topOverlay.innerHTML = `
+          <div class="tile-top-left-badges">
+            <span class="tile-cam-id">${camera.id}</span>
+            <span class="tile-live-badge live-green"><span class="dot-live dot-green"></span> LIVE</span>
+          </div>
+        `;
+      }
 
+      // Bottom Overlay (Bold title, map pin + subtitle, expand icon)
       const bottomOverlay = document.createElement('div');
       bottomOverlay.className = 'tile-bottom-overlay';
       bottomOverlay.innerHTML = `
         <div class="tile-info-text">
-          <span class="tile-name">${camera.name}</span>
-          <span class="tile-zone">${camera.zone}</span>
-          <span class="tile-cctv-osd"><span class="tile-cctv-osd-time">${currentTimestamp}</span> • 30FPS</span>
+          <span class="tile-name">${camMeta.title}</span>
+          <span class="tile-zone"><span class="zone-pin">📍</span> ${camMeta.sub}</span>
         </div>
-        <div class="tile-expand-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="tile-expand-icon" title="Expand CCTV Feed">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="15 3 21 3 21 9"/>
             <polyline points="9 21 3 21 3 15"/>
             <line x1="21" y1="3" x2="14" y2="10"/>
@@ -1032,7 +1051,7 @@
     });
   }
 
-  // ================= ACTIVE ALERTS PANEL =================
+  // ================= ACTIVE ALERTS PANEL (Matching Reference Design with Video Thumbs) =================
   function renderAlertsPanel() {
     if (!dom.alertsList) return;
     dom.alertsList.innerHTML = '';
@@ -1055,23 +1074,42 @@
     alerts.forEach((incident) => {
       const card = document.createElement('div');
       const sevClass = incident.severity ? incident.severity.toLowerCase() : 'observe';
+      const sevLevel = incident.severityLevel || (incident.severity === 'Emergency' ? 3 : (incident.severity === 'Respond' ? 2 : 1));
+      const levelLabel = `Level ${sevLevel}`;
+
       card.className = `alert-card card-${sevClass}`;
       card.id = `alert-card-${incident.incidentId}`;
 
       const timeFormatted = formatTimeAgo(incident.timestamp);
 
       card.innerHTML = `
-        <div class="alert-card-top">
-          <span class="alert-cam-zone">${incident.cameraId} • ${incident.zone}</span>
-          <span class="alert-time">${timeFormatted}</span>
+        <div class="alert-thumb-wrap">
+          <video class="alert-thumb-video" src="/videos/${incident.cameraId.toLowerCase()}.mp4" autoplay loop muted playsinline preload="auto"></video>
         </div>
-        <div class="alert-card-type">${incident.eventType}</div>
-        <p class="alert-card-desc">${incident.description}</p>
-        <div class="alert-card-footer">
-          <span class="alert-status-tag">Status: <strong>${incident.status}</strong></span>
-          <button class="alert-open-btn" data-cam="${incident.cameraId}">Inspect Feed →</button>
+        <div class="alert-card-body">
+          <div class="alert-card-top">
+            <span class="alert-cam-zone">
+              <span class="alert-dot dot-${sevClass}">●</span>
+              ${incident.cameraId} • ${incident.zone}
+            </span>
+            <span class="alert-time">${timeFormatted}</span>
+          </div>
+          <div class="alert-title-row">
+            <span class="alert-card-type">${incident.eventType}</span>
+            <span class="alert-level-pill badge-${sevClass}">${levelLabel}</span>
+          </div>
+          <p class="alert-card-desc">${incident.description}</p>
+          <div class="alert-card-footer">
+            <span class="alert-status-tag">STATUS: <strong>${incident.status.toUpperCase()}</strong></span>
+            <button class="alert-open-btn" data-cam="${incident.cameraId}">Inspect Feed →</button>
+          </div>
         </div>
       `;
+
+      const thumbVideo = card.querySelector('.alert-thumb-video');
+      if (thumbVideo) {
+        thumbVideo.addEventListener('canplay', () => thumbVideo.play().catch(() => {}));
+      }
 
       card.querySelector('.alert-open-btn').addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1086,6 +1124,141 @@
 
       dom.alertsList.appendChild(card);
     });
+  }
+
+  // ================= HERO LANDING PAGE CONTROLLER & AUTH =================
+  function setupLandingPage() {
+    const landingPage = document.getElementById('landing-page');
+    const dashboardApp = document.getElementById('dashboard-app');
+    const btnLandingQuickDemo = document.getElementById('btn-landing-quick-demo');
+    const btnLandingEnterDashboard = document.getElementById('btn-landing-enter-dashboard');
+    const btnHeroLaunchSoc = document.getElementById('btn-hero-launch-soc');
+    const btnInstantDemoAuth = document.getElementById('btn-instant-demo-auth');
+    const btnFooterEnterDashboard = document.getElementById('btn-footer-enter-dashboard');
+    const btnReturnLanding = document.getElementById('btn-return-landing');
+
+    const tabAuthLogin = document.getElementById('tab-auth-login');
+    const tabAuthSignup = document.getElementById('tab-auth-signup');
+    const formLogin = document.getElementById('form-login');
+    const formSignup = document.getElementById('form-signup');
+
+    function enterDashboard(userRole = 'Chief Commander Alex Vance', station = 'Central Metro Terminal • Sector 4') {
+      if (landingPage) landingPage.style.display = 'none';
+      if (dashboardApp) dashboardApp.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      // Ensure all videos play continuously
+      document.querySelectorAll('video').forEach((v) => {
+        v.muted = true;
+        v.defaultMuted = true;
+        v.play().catch(() => {});
+      });
+
+      // Show toast notification
+      showToast(`Access Granted: ${userRole} authenticated for ${station}`, 'success');
+      localStorage.setItem('presense_session', JSON.stringify({ role: userRole, station: station, timestamp: Date.now() }));
+    }
+
+    function exitToLanding() {
+      if (dashboardApp) dashboardApp.style.display = 'none';
+      if (landingPage) landingPage.style.display = 'flex';
+      document.body.style.overflow = 'auto';
+      localStorage.removeItem('presense_session');
+    }
+
+    // Connect landing action buttons
+    if (btnLandingQuickDemo) btnLandingQuickDemo.addEventListener('click', () => enterDashboard());
+    if (btnLandingEnterDashboard) btnLandingEnterDashboard.addEventListener('click', () => enterDashboard());
+    if (btnHeroLaunchSoc) btnHeroLaunchSoc.addEventListener('click', () => enterDashboard());
+    if (btnInstantDemoAuth) btnInstantDemoAuth.addEventListener('click', () => enterDashboard());
+    if (btnFooterEnterDashboard) btnFooterEnterDashboard.addEventListener('click', () => enterDashboard());
+    if (btnReturnLanding) btnReturnLanding.addEventListener('click', exitToLanding);
+
+    // Tab switching between Sign In & Sign Up
+    if (tabAuthLogin && tabAuthSignup) {
+      tabAuthLogin.addEventListener('click', () => {
+        tabAuthLogin.classList.add('active');
+        tabAuthSignup.classList.remove('active');
+        if (formLogin) formLogin.style.display = 'flex';
+        if (formSignup) formSignup.style.display = 'none';
+      });
+
+      tabAuthSignup.addEventListener('click', () => {
+        tabAuthSignup.classList.add('active');
+        tabAuthLogin.classList.remove('active');
+        if (formLogin) formLogin.style.display = 'none';
+        if (formSignup) formSignup.style.display = 'flex';
+      });
+    }
+
+    // Login Form Submit
+    if (formLogin) {
+      formLogin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email')?.value || 'SOC Operator';
+        const station = document.getElementById('login-station')?.value || 'Central Metro Terminal • Sector 4';
+        const namePart = email.split('@')[0].replace('.', ' ').toUpperCase();
+        enterDashboard(`Officer ${namePart}`, station);
+      });
+    }
+
+    // Signup Form Submit
+    if (formSignup) {
+      formSignup.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signup-name')?.value || 'Chief Operator';
+        const dept = document.getElementById('signup-dept')?.value || 'Transit SOC';
+        enterDashboard(`${name} (${dept})`, 'Central Metro Terminal • Sector 4');
+      });
+    }
+
+    // Check if session exists; default to landing page
+    const existing = localStorage.getItem('presense_session');
+    if (existing) {
+      try {
+        const parsed = JSON.parse(existing);
+        enterDashboard(parsed.role, parsed.station);
+      } catch (_) {
+        exitToLanding();
+      }
+    } else {
+      exitToLanding();
+    }
+  }
+
+  // Floating notification toast
+  function showToast(message, type = 'info') {
+    const existing = document.querySelector('.presense-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `presense-toast toast-${type}`;
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #141824;
+      border: 1px solid #f59e0b;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(245, 158, 11, 0.3);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    `;
+    toast.innerHTML = `<span style="color: #f59e0b; font-size: 1rem;">🛡️</span> <span>${message}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.4s ease';
+      setTimeout(() => toast.remove(), 400);
+    }, 3500);
   }
 
   // ---- Setup Filters & Search ----
