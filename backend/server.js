@@ -29,12 +29,27 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+
+// Preserve original request URL across Vercel serverless rewrites and proxies
+app.use((req, res, next) => {
+  if (req.query && req.query.__url) {
+    req.url = req.query.__url;
+  } else if (req.headers['x-matched-path'] && req.headers['x-matched-path'].startsWith('/api')) {
+    req.url = req.headers['x-matched-path'];
+  } else if (req.headers['x-forwarded-uri'] && req.headers['x-forwarded-uri'].startsWith('/api')) {
+    req.url = req.headers['x-forwarded-uri'];
+  }
+  next();
+});
+
 // Increased body limit to support base64 sampled video frames for AI analysis
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// Serve frontend static files from ../frontend/
+// Serve frontend static files and videos from ../frontend/
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use('/videos', express.static(path.join(__dirname, '..', 'frontend', 'videos')));
+
 
 // Serverless-ready DB initialization middleware
 let dbInitialized = false;

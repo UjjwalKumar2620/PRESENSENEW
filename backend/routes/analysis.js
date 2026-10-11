@@ -46,30 +46,52 @@ router.post('/analyze', async (req, res) => {
       customContext
     });
 
-    // Persist report in MongoDB Atlas
-    await saveAIReport({
-      reportId: report.reportId,
-      cameraId,
-      windowMinutes,
-      actualAnalyzedDuration: report.summary?.actualAnalyzedDuration,
-      report,
-      sampledFramesCount: sampledFrames.length
-    });
+    // Persist report in MongoDB Atlas if write quota permits
+    try {
+      await saveAIReport({
+        reportId: report.reportId,
+        cameraId,
+        windowMinutes,
+        actualAnalyzedDuration: report.summary?.actualAnalyzedDuration,
+        report,
+        sampledFramesCount: sampledFrames.length
+      });
+    } catch (saveErr) {
+      console.warn('Atlas saveAIReport warning (write quota / offline):', saveErr.message);
+    }
 
     // If an incident was detected with Respond or Emergency, or if autoCreateIncident was requested
     let createdIncident = null;
     const highestIncident = report.potentialIncidents?.[0];
     if (highestIncident && (highestIncident.severity === 'Respond' || highestIncident.severity === 'Emergency' || autoCreateIncident)) {
-      createdIncident = await createIncident({
-        cameraId,
-        cameraName: report.summary?.cameraName,
-        zone: report.summary?.zone,
-        eventType: highestIncident.eventCategory,
-        severity: highestIncident.severity,
-        description: `[AI Finding] ${highestIncident.observedEvidence} (${highestIncident.reasoning})`,
-        evidenceReference: `${cameraId} AI Report ${report.reportId}`,
-        sourceType: 'ai_vision_analysis'
-      });
+      try {
+        createdIncident = await createIncident({
+          cameraId,
+          cameraName: report.summary?.cameraName,
+          zone: report.summary?.zone,
+          eventType: highestIncident.eventCategory,
+          severity: highestIncident.severity,
+          description: `[AI Finding] ${highestIncident.observedEvidence} (${highestIncident.reasoning})`,
+          evidenceReference: `${cameraId} AI Report ${report.reportId}`,
+          sourceType: 'ai_vision_analysis'
+        });
+      } catch (incErr) {
+        console.warn('Atlas createIncident warning:', incErr.message);
+        createdIncident = {
+          incidentId: `INC-${Date.now()}`,
+          cameraId,
+          cameraName: report.summary?.cameraName,
+          zone: report.summary?.zone,
+          eventType: highestIncident.eventCategory,
+          severity: highestIncident.severity,
+          severityLevel: highestIncident.severity === 'Emergency' ? 3 : highestIncident.severity === 'Respond' ? 2 : 1,
+          status: 'New',
+          timestamp: new Date().toISOString(),
+          description: `[AI Finding] ${highestIncident.observedEvidence} (${highestIncident.reasoning})`,
+          evidenceReference: `${cameraId} AI Report ${report.reportId}`,
+          sourceType: 'ai_vision_analysis'
+        };
+      }
     }
 
     res.json({

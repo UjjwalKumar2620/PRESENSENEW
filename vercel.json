@@ -12,8 +12,12 @@
   ],
   "routes": [
     {
+      "src": "/videos/(.*)",
+      "dest": "frontend/videos/$1"
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "backend/server.js"
+      "dest": "backend/server.js?__url=/api/$1"
     },
     {
       "src": "/(.*)",

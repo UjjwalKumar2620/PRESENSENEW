@@ -15,11 +15,17 @@ const { CAMERAS } = require('../config/cameras');
 const router = Router();
 
 // Helper to find local video path if available
-function getLocalVideoPath(filename) {
-  const rootPath = path.resolve(__dirname, '..', '..', filename);
-  if (fs.existsSync(rootPath)) return rootPath;
-  const videosSubdir = path.resolve(__dirname, '..', '..', 'videos', filename);
-  if (fs.existsSync(videosSubdir)) return videosSubdir;
+function getLocalVideoPath(filename, cameraId) {
+  if (cameraId) {
+    const frontendVideo = path.resolve(__dirname, '..', '..', 'frontend', 'videos', `${cameraId.toLowerCase()}.mp4`);
+    if (fs.existsSync(frontendVideo)) return frontendVideo;
+  }
+  if (filename) {
+    const rootPath = path.resolve(__dirname, '..', '..', filename);
+    if (fs.existsSync(rootPath)) return rootPath;
+    const videosSubdir = path.resolve(__dirname, '..', '..', 'videos', filename);
+    if (fs.existsSync(videosSubdir)) return videosSubdir;
+  }
   return null;
 }
 
@@ -54,7 +60,7 @@ router.get('/', async (req, res) => {
     const cameras = CAMERAS.map((cam) => {
       const camId = cam.id || cam.cameraId;
       const stored = storedMap.get(camId);
-      const localPath = getLocalVideoPath(cam.filename);
+      const localPath = getLocalVideoPath(cam.filename, camId);
       let localSize = null;
       if (!stored && localPath) {
         try {
@@ -152,7 +158,7 @@ router.get('/:id/status', async (req, res) => {
       });
     } catch {}
 
-    const localPath = getLocalVideoPath(camera.filename);
+    const localPath = getLocalVideoPath(camera.filename, cameraId);
     const fallback = FALLBACK_GRIDFS_MAP[cameraId];
 
     res.json({
@@ -279,8 +285,8 @@ router.get('/:id/stream', async (req, res) => {
       return downloadStream.pipe(res);
     }
 
-    // 2. Stream from local file if available on disk
-    const localPath = getLocalVideoPath(camera.filename);
+    // 2. Stream from local file or optimized clip if available on disk
+    const localPath = getLocalVideoPath(camera.filename, cameraId);
     if (localPath && fs.existsSync(localPath)) {
       const stat = fs.statSync(localPath);
       const fileSize = stat.size;

@@ -22,5 +22,7 @@ npm-debug.log*
 dist/
 build/
 
-# Video files (too large for git)
+# Video files (too large for git, keep raw 4K videos ignored)
 *.mp4
+!frontend/videos/*.mp4
+
