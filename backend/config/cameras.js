@@ -122,9 +122,9 @@ const CAMERAS = [
   {
     cameraId: 'CAM-07',
     id: 'CAM-07',
-    displayName: 'Logistics & Loading Dock Cam 7',
-    name: 'Camera 07',
-    zone: 'Logistics Loading Bay & Cargo',
+    displayName: 'Platform 1 - Trackside North',
+    name: 'Platform 1 - Trackside North',
+    zone: 'Platform 1 - Trackside North',
     location: 'Loading Dock',
     filename: '15853928_2160_3840_30fps.mp4',
     gridFSFileId: '6aca5f6368d3d1710352f929',
@@ -136,45 +136,45 @@ const CAMERAS = [
     enabled: true,
     mapCoordinates: { x: 820, y: 390 },
     coverageZone: { angle: 270, fov: 90, radius: 90, type: 'cone' },
-    description: 'Parcel handling dock, service vehicle access, and rear emergency gates.'
+    description: 'Trackside north clearance zone, passenger platform 1 boundary.'
   },
   {
     cameraId: 'CAM-08',
     id: 'CAM-08',
-    displayName: 'Platform 1 Track Overlook Cam 8',
-    name: 'Camera 08',
-    zone: 'Platform 1 - Trackside North',
-    location: 'Rooftop',
+    displayName: 'Platform 2 - Trackside South',
+    name: 'Platform 2 - Trackside South',
+    zone: 'Platform 2 - Trackside South',
+    location: 'Platform 2',
     filename: '16855083_2160_3840_60fps.mp4',
     gridFSFileId: null, // Streamed via verified fallback stream (Atlas M0 512MB quota)
     sourceType: 'prerecorded_demo',
     mimeType: 'video/mp4',
     resolution: '2160×3840',
-    fps: 60,
+    fps: 30,
     status: 'recorded',
     enabled: true,
     mapCoordinates: { x: 440, y: 120 },
     coverageZone: { angle: 90, fov: 90, radius: 100, type: 'cone' },
-    description: 'Platform 1 platform-edge yellow safety zone and overhead gantry view.'
+    description: 'Platform 2 trackside clearance zone, escalator approaches, and platform edge.'
   },
   {
     cameraId: 'CAM-09',
     id: 'CAM-09',
-    displayName: 'Emergency Track Access Gate Cam 9',
-    name: 'Camera 09',
-    zone: 'Platform 2 - Emergency Exit Gate',
-    location: 'Emergency Exit',
+    displayName: 'Exit Gate - South Concourse',
+    name: 'Exit Gate - South Concourse',
+    zone: 'Exit Gate - South Concourse',
+    location: 'Exit Gate',
     filename: '19085074-uhd_2160_3840_60fps.mp4',
     gridFSFileId: null, // Streamed via verified fallback stream (Atlas M0 512MB quota)
     sourceType: 'prerecorded_demo',
     mimeType: 'video/mp4',
     resolution: '2160×3840',
-    fps: 60,
+    fps: 30,
     status: 'recorded',
     enabled: true,
     mapCoordinates: { x: 620, y: 120 },
     coverageZone: { angle: 90, fov: 80, radius: 95, type: 'cone' },
-    description: 'Emergency passenger egress gates and restricted track ballast crossover area.'
+    description: 'South concourse egress gates, retail corridor, and exit pathways.'
   },
 ];
 

@@ -36,35 +36,65 @@ app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 // Serve frontend static files from ../frontend/
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// API Routes
+// Serverless-ready DB initialization middleware
+let dbInitialized = false;
+async function ensureDbInit() {
+  if (!dbInitialized) {
+    try {
+      await connectDB();
+      await initializeCollections().catch((err) =>
+        console.warn('Init collections warning:', err.message)
+      );
+      dbInitialized = true;
+    } catch (err) {
+      console.warn('Database initialization warning:', err.message);
+    }
+  }
+}
+
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/cameras') || req.path.startsWith('/incidents') || req.path.startsWith('/analysis')) {
+    await ensureDbInit();
+  }
+  next();
+});
+
+// API Routes (mounted with and without /api prefix for robust serverless proxying)
 app.use('/api/cameras', camerasRouter);
+app.use('/cameras', camerasRouter);
+
 app.use('/api/incidents', incidentsRouter);
+app.use('/incidents', incidentsRouter);
+
 app.use('/api/analysis', analysisRouter);
+app.use('/analysis', analysisRouter);
+
 app.use('/api/analytics', analyticsRouter);
+app.use('/analytics', analyticsRouter);
+
 app.use('/api/settings', settingsRouter);
+app.use('/settings', settingsRouter);
 
 // Health check
-app.get('/api/health', (req, res) => {
+const healthHandler = (req, res) => {
   res.json({
     status: 'ok',
     service: 'PreSense CCTV Intelligence Backend',
     timestamp: new Date().toISOString(),
   });
-});
+};
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
 
 // Fallback: serve index.html for SPA-style routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 
-// Start server
+// Start server (only when executed directly, e.g. node server.js)
 async function start() {
   try {
-    // Connect to MongoDB Atlas
-    await connectDB();
-
-    // Initialize incident and report collections & indexes
-    await initializeCollections();
+    await ensureDbInit();
 
     app.listen(PORT, () => {
       console.log(`\n🚀 PreSense server running at http://localhost:${PORT}`);
@@ -91,4 +121,8 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-start();
+if (require.main === module) {
+  start();
+}
+
+module.exports = app;

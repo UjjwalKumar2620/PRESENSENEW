@@ -16,55 +16,89 @@ const SEED_INCIDENTS = [
   {
     incidentId: 'INC-2026-001',
     cameraId: 'CAM-03',
-    cameraName: 'Camera 03',
+    cameraName: 'Entrance Concourse Cam 3',
     zone: 'Central Concourse Corridor',
-    eventType: 'Unattended Luggage',
-    severity: 'Observe', // Level 1: Observe
-    severityLevel: 1,
+    eventType: 'Unattended Luggage Package',
+    severity: 'Emergency', // Level 3 Critical
+    severityLevel: 3,
     status: 'Acknowledged',
-    timestamp: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-    description: 'Black rollaboard suitcase stationary near Pillar 4 turnstiles for >12 minutes without apparent owner.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    description: 'Hard-shell suitcase left unattended beside Ticketing Gate 3 for >10 minutes.',
     sourceType: 'simulated_demo',
     evidenceReference: 'CAM-03 Concourse Frame 04:12',
     actionHistory: [
-      { action: 'Detected', by: 'System Alert', timestamp: new Date(Date.now() - 1000 * 60 * 35).toISOString(), notes: 'Stationary object flag triggered.' },
-      { action: 'Acknowledged', by: 'Duty Operator (Station Control)', timestamp: new Date(Date.now() - 1000 * 60 * 25).toISOString(), notes: 'Patrol officer dispatched to inspect.' }
+      { action: 'Detected', by: 'System Alert', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), notes: 'Stationary package trigger.' },
+      { action: 'Acknowledged', by: 'Station Control SOC', timestamp: new Date(Date.now() - 1000 * 60 * 50).toISOString(), notes: 'Patrol dispatched.' }
     ]
   },
   {
     incidentId: 'INC-2026-002',
-    cameraId: 'CAM-06',
-    cameraName: 'Camera 06',
-    zone: 'West Stairwell Overbridge',
-    eventType: 'Crowd Congestion Surge',
-    severity: 'Respond', // Level 2: Respond
+    cameraId: 'CAM-04',
+    cameraName: 'Operations & Server Vault Cam 4',
+    zone: 'Security Operations & Tech Vault',
+    eventType: 'Unauthorized Access Perimeter Breach',
+    severity: 'Respond', // Level 2 Respond
     severityLevel: 2,
-    status: 'Assigned',
-    timestamp: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
-    description: 'High-density passenger bottleneck on stairwell leading to Platform 1 after train arrival.',
+    status: 'New',
+    timestamp: new Date(Date.now() - 1000 * 60 * 65).toISOString(),
+    description: 'Individual entered restricted access corridor outside Server Operations Vault without authorized badge.',
     sourceType: 'simulated_demo',
-    evidenceReference: 'CAM-06 Stairwell Frame 02:40',
+    evidenceReference: 'CAM-04 Vault Corridor Frame 01:22',
     actionHistory: [
-      { action: 'Detected', by: 'System Alert', timestamp: new Date(Date.now() - 1000 * 60 * 18).toISOString(), notes: 'High density threshold reached.' },
-      { action: 'Acknowledged', by: 'Duty Operator', timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), notes: 'Escalator flow reversal initiated.' },
-      { action: 'Assigned', by: 'Supervisor', timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(), notes: 'Platform Marshall Team 2 assigned for crowd channeling.' }
+      { action: 'Detected', by: 'Perimeter Sensor', timestamp: new Date(Date.now() - 1000 * 60 * 65).toISOString(), notes: 'Badge bypass detected.' }
     ]
   },
   {
     incidentId: 'INC-2026-003',
     cameraId: 'CAM-08',
-    cameraName: 'Camera 08',
-    zone: 'Platform 1 - Trackside North',
+    cameraName: 'Platform 2 - Trackside South',
+    zone: 'Platform 1 • Trackside North',
     eventType: 'Platform Yellow Line Intrusion',
-    severity: 'Emergency', // Level 3: Emergency
-    severityLevel: 3,
-    status: 'New',
-    timestamp: new Date(Date.now() - 1000 * 60 * 4).toISOString(),
-    description: 'Person detected leaning over platform edge into track clearance zone ahead of oncoming express transit.',
+    severity: 'Respond', // Level 2 Respond
+    severityLevel: 2,
+    status: 'Acknowledged',
+    timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString(),
+    description: 'Person detected leaning over platform edge into track clearance zone ahead of incoming express transit.',
     sourceType: 'simulated_demo',
-    evidenceReference: 'CAM-08 Platform 1 Overlook Frame 01:15',
+    evidenceReference: 'CAM-08 Platform 1 Overlook Frame 03:15',
     actionHistory: [
-      { action: 'Detected', by: 'Critical Zone Trigger', timestamp: new Date(Date.now() - 1000 * 60 * 4).toISOString(), notes: 'Immediate operator verification required.' }
+      { action: 'Detected', by: 'Critical Zone Trigger', timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString(), notes: 'Yellow line clearance trigger.' },
+      { action: 'Acknowledged', by: 'Platform Marshal', timestamp: new Date(Date.now() - 1000 * 60 * 70).toISOString(), notes: 'Audio warning sounded.' }
+    ]
+  },
+  {
+    incidentId: 'INC-2026-004',
+    cameraId: 'CAM-06',
+    cameraName: 'West Stairwell & Footbridge Cam 6',
+    zone: 'West Stairwell Overbridge',
+    eventType: 'Crowd Congestion Surge',
+    severity: 'Observe', // Level 1 Observe
+    severityLevel: 1,
+    status: 'Assigned',
+    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+    description: 'High-density passenger bottleneck on stairwell leading to Platform 1 after train arrival.',
+    sourceType: 'simulated_demo',
+    evidenceReference: 'CAM-06 Stairwell Frame 02:40',
+    actionHistory: [
+      { action: 'Detected', by: 'Density Counter', timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), notes: 'Stairwell capacity >85%.' },
+      { action: 'Assigned', by: 'Supervisor', timestamp: new Date(Date.now() - 1000 * 60 * 110).toISOString(), notes: 'Marshall Team 2 assigned.' }
+    ]
+  },
+  {
+    incidentId: 'INC-2026-005',
+    cameraId: 'CAM-03',
+    cameraName: 'Entrance Concourse Cam 3',
+    zone: 'Central Concourse Corridor',
+    eventType: 'Suspicious Behavior Detected',
+    severity: 'Observe', // Level 1 Observe
+    severityLevel: 1,
+    status: 'Monitoring',
+    timestamp: new Date(Date.now() - 1000 * 60 * 125).toISOString(),
+    description: 'Individual loitering near security checkpoint for extended duration.',
+    sourceType: 'simulated_demo',
+    evidenceReference: 'CAM-03 Concourse Frame 05:08',
+    actionHistory: [
+      { action: 'Detected', by: 'Dwell Time Tracker', timestamp: new Date(Date.now() - 1000 * 60 * 125).toISOString(), notes: 'Dwell time >20 minutes.' }
     ]
   }
 ];

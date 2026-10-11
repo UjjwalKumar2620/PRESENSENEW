@@ -14,10 +14,286 @@
 (function () {
   'use strict';
 
-  // ---- State ----
+  // ---- Fallback Default CCTV Cameras (Guarantees zero blank screen in all environments) ----
+  const DEFAULT_CAMERAS = [
+    {
+      id: 'CAM-01',
+      cameraId: 'CAM-01',
+      name: 'Entrance Concourse Cam 1',
+      displayName: 'Entrance Concourse Cam 1',
+      zone: 'Entrance & Ticket Hall',
+      location: 'Entrance & Ticket Hall',
+      resolution: '1920×1080',
+      fps: 25,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 9661943,
+      gridFSFileId: '6aca5f2468d3d1710352f481',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 220, y: 390 },
+      coverageZone: { angle: 45, fov: 70, radius: 85, type: 'cone' },
+      description: 'Covers main passenger entrance, turnstile approaches, and information kiosk.',
+    },
+    {
+      id: 'CAM-02',
+      cameraId: 'CAM-02',
+      name: 'North Transit Plaza Cam 2',
+      displayName: 'North Transit Plaza Cam 2',
+      zone: 'Transit Plaza & Parking North',
+      location: 'Transit Plaza & Parking North',
+      resolution: '3840×2160',
+      fps: 30,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 93950606,
+      gridFSFileId: '6aca5f2668d3d1710352f4a8',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 120, y: 180 },
+      coverageZone: { angle: 90, fov: 90, radius: 95, type: 'cone' },
+      description: 'Covers intermodal drop-off zone, bus bays, and parking perimeter.',
+    },
+    {
+      id: 'CAM-03',
+      cameraId: 'CAM-03',
+      name: 'Main Corridor & Turnstiles Cam 3',
+      displayName: 'Main Corridor & Turnstiles Cam 3',
+      zone: 'Central Concourse Corridor',
+      location: 'Central Concourse Corridor',
+      resolution: '3840×2160',
+      fps: 24,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 61750855,
+      gridFSFileId: '6aca5f3968d3d1710352f611',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 380, y: 350 },
+      coverageZone: { angle: 0, fov: 80, radius: 90, type: 'cone' },
+      description: 'High-density passenger movement between ticket gates and platform access stairs.',
+    },
+    {
+      id: 'CAM-04',
+      cameraId: 'CAM-04',
+      name: 'Operations & Server Vault Cam 4',
+      displayName: 'Operations & Server Vault Cam 4',
+      zone: 'Security Operations & Tech Vault',
+      location: 'Security Operations & Tech Vault',
+      resolution: '3840×2160',
+      fps: 24,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 66288318,
+      gridFSFileId: '6aca5f4668d3d1710352f6ff',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 740, y: 190 },
+      coverageZone: { angle: 220, fov: 65, radius: 75, type: 'cone' },
+      description: 'Restricted access critical infrastructure corridor and server room entrance.',
+    },
+    {
+      id: 'CAM-05',
+      cameraId: 'CAM-05',
+      name: 'Passenger Waiting Lounge Cam 5',
+      displayName: 'Passenger Waiting Lounge Cam 5',
+      zone: 'East Passenger Waiting Hall',
+      location: 'East Passenger Waiting Hall',
+      resolution: '3840×2160',
+      fps: 30,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 22218776,
+      gridFSFileId: '6aca5f5368d3d1710352f7fe',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 550, y: 350 },
+      coverageZone: { angle: 315, fov: 85, radius: 90, type: 'cone' },
+      description: 'General waiting area, passenger seating rows, and lost & found booth.',
+    },
+    {
+      id: 'CAM-06',
+      cameraId: 'CAM-06',
+      name: 'West Stairwell & Footbridge Cam 6',
+      displayName: 'West Stairwell & Footbridge Cam 6',
+      zone: 'West Stairwell Overbridge',
+      location: 'West Stairwell Overbridge',
+      resolution: '2160×3840',
+      fps: 24,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 55016966,
+      gridFSFileId: '6aca5f5868d3d1710352f855',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 260, y: 220 },
+      coverageZone: { angle: 135, fov: 70, radius: 80, type: 'cone' },
+      description: 'Vertical stairwell and footbridge link connecting Concourse to Platform 1.',
+    },
+    {
+      id: 'CAM-07',
+      cameraId: 'CAM-07',
+      name: 'Platform 1 - Trackside North',
+      displayName: 'Platform 1 - Trackside North',
+      zone: 'Platform 1 - Trackside North',
+      location: 'Platform 1 - Trackside North',
+      resolution: '2160×3840',
+      fps: 30,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 81227841,
+      gridFSFileId: '6aca5f6368d3d1710352f929',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 820, y: 390 },
+      coverageZone: { angle: 270, fov: 90, radius: 90, type: 'cone' },
+      description: 'Trackside north clearance zone, passenger platform 1 boundary.',
+    },
+    {
+      id: 'CAM-08',
+      cameraId: 'CAM-08',
+      name: 'Platform 2 - Trackside South',
+      displayName: 'Platform 2 - Trackside South',
+      zone: 'Platform 2 - Trackside South',
+      location: 'Platform 2 - Trackside South',
+      resolution: '2160×3840',
+      fps: 30,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 55016966,
+      gridFSFileId: '6aca5f5868d3d1710352f855',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 440, y: 120 },
+      coverageZone: { angle: 90, fov: 90, radius: 100, type: 'cone' },
+      description: 'Platform 2 trackside clearance zone, escalator approaches, and platform edge.',
+    },
+    {
+      id: 'CAM-09',
+      cameraId: 'CAM-09',
+      name: 'Exit Gate - South Concourse',
+      displayName: 'Exit Gate - South Concourse',
+      zone: 'Exit Gate - South Concourse',
+      location: 'Exit Gate - South Concourse',
+      resolution: '2160×3840',
+      fps: 30,
+      status: 'recorded',
+      sourceType: 'gridfs',
+      source: 'gridfs',
+      videoAvailable: true,
+      videoSizeBytes: 9661943,
+      gridFSFileId: '6aca5f2468d3d1710352f481',
+      mimeType: 'video/mp4',
+      mapCoordinates: { x: 620, y: 120 },
+      coverageZone: { angle: 90, fov: 80, radius: 95, type: 'cone' },
+      description: 'South concourse egress gates, retail corridor, and exit pathways.',
+    },
+  ];
+
+  // ---- Fallback Default Incidents ----
+  const DEFAULT_INCIDENTS = [
+    {
+      incidentId: 'INC-2026-001',
+      cameraId: 'CAM-03',
+      cameraName: 'Main Corridor & Turnstiles Cam 3',
+      zone: 'Central Concourse Corridor',
+      eventType: 'Unattended Luggage Package',
+      severity: 'Emergency',
+      severityLevel: 3,
+      status: 'Acknowledged',
+      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+      description: 'Hard-shell suitcase left unattended beside Ticketing Gate 3 for >10 minutes.',
+      sourceType: 'simulated_demo',
+      evidenceReference: 'CAM-03 Concourse Frame 04:12',
+      actionHistory: [
+        { action: 'Detected', by: 'System Alert', timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), notes: 'Stationary package trigger.' },
+        { action: 'Acknowledged', by: 'Station Control SOC', timestamp: new Date(Date.now() - 1000 * 60 * 35).toISOString(), notes: 'Patrol dispatched.' }
+      ]
+    },
+    {
+      incidentId: 'INC-2026-002',
+      cameraId: 'CAM-04',
+      cameraName: 'Operations & Server Vault Cam 4',
+      zone: 'Security Operations & Tech Vault',
+      eventType: 'Unauthorized Access Perimeter Breach',
+      severity: 'Respond',
+      severityLevel: 2,
+      status: 'New',
+      timestamp: new Date(Date.now() - 1000 * 60 * 65).toISOString(),
+      description: 'Individual entered restricted access corridor outside Server Operations Vault without authorized badge.',
+      sourceType: 'simulated_demo',
+      evidenceReference: 'CAM-04 Vault Corridor Frame 01:22',
+      actionHistory: [
+        { action: 'Detected', by: 'Perimeter Sensor', timestamp: new Date(Date.now() - 1000 * 60 * 65).toISOString(), notes: 'Badge bypass detected.' }
+      ]
+    },
+    {
+      incidentId: 'INC-2026-003',
+      cameraId: 'CAM-08',
+      cameraName: 'Platform 2 - Trackside South',
+      zone: 'Platform 2 - Trackside South',
+      eventType: 'Platform Yellow Line Intrusion',
+      severity: 'Respond',
+      severityLevel: 2,
+      status: 'Acknowledged',
+      timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString(),
+      description: 'Person detected leaning over platform edge into track clearance zone ahead of incoming express transit.',
+      sourceType: 'simulated_demo',
+      evidenceReference: 'CAM-08 Platform Overlook Frame 03:15',
+      actionHistory: [
+        { action: 'Detected', by: 'Critical Zone Trigger', timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString(), notes: 'Yellow line clearance trigger.' },
+        { action: 'Acknowledged', by: 'Platform Marshal', timestamp: new Date(Date.now() - 1000 * 60 * 70).toISOString(), notes: 'Audio warning sounded.' }
+      ]
+    },
+    {
+      incidentId: 'INC-2026-004',
+      cameraId: 'CAM-06',
+      cameraName: 'West Stairwell & Footbridge Cam 6',
+      zone: 'West Stairwell Overbridge',
+      eventType: 'Crowd Congestion Surge',
+      severity: 'Observe',
+      severityLevel: 1,
+      status: 'Assigned',
+      timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      description: 'High-density passenger bottleneck on stairwell leading to Platform 1 after train arrival.',
+      sourceType: 'simulated_demo',
+      evidenceReference: 'CAM-06 Stairwell Frame 02:40',
+      actionHistory: [
+        { action: 'Detected', by: 'Density Counter', timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), notes: 'Stairwell capacity >85%.' },
+        { action: 'Assigned', by: 'Supervisor', timestamp: new Date(Date.now() - 1000 * 60 * 110).toISOString(), notes: 'Marshall Team 2 assigned.' }
+      ]
+    },
+    {
+      incidentId: 'INC-2026-005',
+      cameraId: 'CAM-03',
+      cameraName: 'Main Corridor & Turnstiles Cam 3',
+      zone: 'Central Concourse Corridor',
+      eventType: 'Suspicious Behavior Detected',
+      severity: 'Observe',
+      severityLevel: 1,
+      status: 'Monitoring',
+      timestamp: new Date(Date.now() - 1000 * 60 * 125).toISOString(),
+      description: 'Individual loitering near security checkpoint for extended duration.',
+      sourceType: 'simulated_demo',
+      evidenceReference: 'CAM-03 Concourse Frame 05:08',
+      actionHistory: [
+        { action: 'Detected', by: 'Dwell Time Tracker', timestamp: new Date(Date.now() - 1000 * 60 * 125).toISOString(), notes: 'Dwell time >20 minutes.' }
+      ]
+    }
+  ];
+
+  // ---- State (Initialized immediately with full defaults) ----
   const state = {
-    cameras: [],
-    incidents: [],
+    cameras: [...DEFAULT_CAMERAS],
+    incidents: [...DEFAULT_INCIDENTS],
     analytics: null,
     settings: null,
     currentView: 'dashboard',
@@ -30,32 +306,74 @@
     hudInterval: null,
   };
 
-  // ---- API Helper ----
+  // ---- API Helper with Safe Resilient Fallbacks ----
   const API = {
     async getCameras() {
-      const res = await fetch('/api/cameras');
-      return await res.json();
+      try {
+        const res = await fetch('/api/cameras');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
+          return data;
+        }
+      } catch (err) {
+        console.warn('API getCameras using offline fallback:', err.message);
+      }
+      return { success: true, count: DEFAULT_CAMERAS.length, cameras: DEFAULT_CAMERAS };
     },
     async getIncidents(filter = {}) {
-      const params = new URLSearchParams(filter).toString();
-      const res = await fetch(`/api/incidents${params ? '?' + params : ''}`);
-      return await res.json();
+      try {
+        const params = new URLSearchParams(filter).toString();
+        const res = await fetch(`/api/incidents${params ? '?' + params : ''}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.incidents)) {
+          return data;
+        }
+      } catch (err) {
+        console.warn('API getIncidents using offline fallback:', err.message);
+      }
+      return { success: true, count: DEFAULT_INCIDENTS.length, incidents: DEFAULT_INCIDENTS };
     },
     async updateIncidentStatus(id, status, operatorName, notes) {
-      const res = await fetch(`/api/incidents/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, operatorName, notes }),
-      });
-      return await res.json();
+      try {
+        const res = await fetch(`/api/incidents/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, operatorName, notes }),
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('Incident update offline fallback:', err.message);
+      }
+      // Local state fallback update
+      const idx = state.incidents.findIndex((i) => i.incidentId === id);
+      if (idx !== -1) {
+        state.incidents[idx].status = status;
+        state.incidents[idx].actionHistory = state.incidents[idx].actionHistory || [];
+        state.incidents[idx].actionHistory.push({
+          action: status,
+          by: operatorName || 'Duty SOC Lead',
+          timestamp: new Date().toISOString(),
+          notes: notes || ''
+        });
+        return { success: true, incident: state.incidents[idx] };
+      }
+      return { success: false };
     },
     async simulateIncident(scenarioType) {
-      const res = await fetch('/api/incidents/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenarioType }),
-      });
-      return await res.json();
+      try {
+        const res = await fetch('/api/incidents/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenarioType }),
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('Simulation API offline fallback:', err.message);
+      }
+      // Generate simulated incident locally
+      return { success: true, incident: generateLocalSimulatedIncident(scenarioType) };
     },
     async runAIAnalysis(payload) {
       const res = await fetch('/api/analysis/analyze', {
@@ -66,22 +384,102 @@
       return await res.json();
     },
     async createIncident(incidentData) {
-      const res = await fetch('/api/incidents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(incidentData),
-      });
-      return await res.json();
+      try {
+        const res = await fetch('/api/incidents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(incidentData),
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('createIncident fallback:', err.message);
+      }
+      const newInc = {
+        incidentId: `INC-${Date.now().toString().slice(-4)}`,
+        ...incidentData,
+        status: 'New',
+        timestamp: new Date().toISOString(),
+      };
+      state.incidents.unshift(newInc);
+      return { success: true, incident: newInc };
     },
     async getAnalytics() {
-      const res = await fetch('/api/analytics');
-      return await res.json();
+      try {
+        const res = await fetch('/api/analytics');
+        if (res.ok) return await res.json();
+      } catch {}
+      return { success: false };
     },
     async getSettings() {
-      const res = await fetch('/api/settings');
-      return await res.json();
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) return await res.json();
+      } catch {}
+      return { success: false };
     },
   };
+
+  // Helper for generating local scenario incidents if backend is delayed
+  function generateLocalSimulatedIncident(scenarioType) {
+    const now = new Date().toISOString();
+    const map = {
+      person_on_track: {
+        incidentId: `SIM-${Math.floor(1000 + Math.random() * 9000)}`,
+        cameraId: 'CAM-08',
+        cameraName: 'Platform 2 - Trackside South',
+        zone: 'Platform 2 - Trackside South',
+        eventType: 'Person in Track Clearance Zone',
+        severity: 'Emergency',
+        severityLevel: 3,
+        status: 'New',
+        timestamp: now,
+        description: 'Simulated Demo: Passenger crossed platform safety threshold and entered track clearance zone.',
+        sourceType: 'simulated_demo'
+      },
+      unattended_object: {
+        incidentId: `SIM-${Math.floor(1000 + Math.random() * 9000)}`,
+        cameraId: 'CAM-03',
+        cameraName: 'Main Corridor & Turnstiles Cam 3',
+        zone: 'Central Concourse Corridor',
+        eventType: 'Unattended Luggage Package',
+        severity: 'Observe',
+        severityLevel: 1,
+        status: 'New',
+        timestamp: now,
+        description: 'Simulated Demo: Stationary luggage left unattended beside turnstile bank.',
+        sourceType: 'simulated_demo'
+      },
+      restricted_zone: {
+        incidentId: `SIM-${Math.floor(1000 + Math.random() * 9000)}`,
+        cameraId: 'CAM-04',
+        cameraName: 'Operations & Server Vault Cam 4',
+        zone: 'Security Operations & Tech Vault',
+        eventType: 'Critical Infrastructure Breach',
+        severity: 'Respond',
+        severityLevel: 2,
+        status: 'New',
+        timestamp: now,
+        description: 'Simulated Demo: Unauthorized perimeter entry detected near server room corridor.',
+        sourceType: 'simulated_demo'
+      },
+      fight_activity: {
+        incidentId: `SIM-${Math.floor(1000 + Math.random() * 9000)}`,
+        cameraId: 'CAM-05',
+        cameraName: 'Passenger Waiting Lounge Cam 5',
+        zone: 'East Passenger Waiting Hall',
+        eventType: 'Physical Altercation Escalation',
+        severity: 'Respond',
+        severityLevel: 2,
+        status: 'New',
+        timestamp: now,
+        description: 'Simulated Demo: Physical altercation escalated between passengers in waiting lounge.',
+        sourceType: 'simulated_demo'
+      }
+    };
+    const inc = map[scenarioType] || map.person_on_track;
+    state.incidents.unshift(inc);
+    return inc;
+  }
 
   // ---- DOM Elements Cache ----
   const dom = {};
@@ -90,9 +488,15 @@
     dom.cctvGrid = document.getElementById('cctv-grid');
     dom.alertsList = document.getElementById('alerts-cards-list');
     dom.alertsCountBadge = document.getElementById('alerts-count-badge');
+    dom.alertsCountHeader = document.getElementById('alerts-count-header');
+    dom.filterCountAll = document.getElementById('filter-count-all');
+    dom.filterCountL3 = document.getElementById('filter-count-l3');
+    dom.filterCountL2 = document.getElementById('filter-count-l2');
+    dom.filterCountL1 = document.getElementById('filter-count-l1');
     dom.sidebarIncidentCount = document.getElementById('sidebar-incident-count');
     dom.sidebarCamCount = document.getElementById('sidebar-cam-count');
     dom.clock = document.getElementById('clock-display');
+    dom.dateDisplay = document.getElementById('date-display');
     dom.searchInput = document.getElementById('camera-search-input');
 
     // KPI Elements
@@ -164,8 +568,13 @@
     setupSimulationLauncher();
     setupGlobalAutoplayKickstarter();
 
+    // 1. Immediately render defaults (Guarantees zero blank screen in all deployments)
+    renderAll();
+    renderVenueMap();
+
+    // 2. Hydrate from backend asynchronously
     try {
-      await Promise.all([
+      await Promise.allSettled([
         loadCameras(),
         loadIncidents(),
         loadAnalytics(),
@@ -174,7 +583,7 @@
       renderAll();
       renderVenueMap();
     } catch (err) {
-      console.error('Initialization error:', err);
+      console.warn('Backend hydration notice:', err);
     }
   }
 
@@ -202,6 +611,13 @@
       const now = new Date();
       const timeStr = now.toTimeString().split(' ')[0] + ' UTC';
       if (dom.clock) dom.clock.textContent = timeStr;
+      if (dom.dateDisplay) {
+        dom.dateDisplay.textContent = now.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
 
       // Update OSD timestamps on all dashboard camera tiles
       const nowIso = now.toISOString().replace('T', ' ').slice(0, 19);
@@ -246,7 +662,7 @@
   // ---- Data Loaders ----
   async function loadCameras() {
     const data = await API.getCameras();
-    if (data.success && data.cameras) {
+    if (data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
       state.cameras = data.cameras;
       if (dom.sidebarCamCount) dom.sidebarCamCount.textContent = state.cameras.length;
       state.cameras.forEach((c) => {
@@ -259,7 +675,7 @@
 
   async function loadIncidents() {
     const data = await API.getIncidents();
-    if (data.success && data.incidents) {
+    if (data.success && Array.isArray(data.incidents)) {
       state.incidents = data.incidents;
       updateKpis();
     }
@@ -284,17 +700,26 @@
   function updateKpis() {
     const totalCameras = state.cameras.length;
     const activeIncidents = state.incidents.filter(
-      (i) => i.status === 'New' || i.status === 'Acknowledged' || i.status === 'Assigned'
+      (i) => i.status === 'New' || i.status === 'Acknowledged' || i.status === 'Assigned' || i.status === 'Monitoring'
     );
     const criticalIncidents = activeIncidents.filter((i) => i.severity === 'Emergency');
+    const respondIncidents = activeIncidents.filter((i) => i.severity === 'Respond');
+    const observeIncidents = activeIncidents.filter((i) => i.severity === 'Observe');
 
     if (dom.kpiCameras) dom.kpiCameras.textContent = `${totalCameras} / ${totalCameras}`;
     if (dom.kpiIncidents) dom.kpiIncidents.textContent = state.incidents.length;
     if (dom.kpiActiveAlerts) dom.kpiActiveAlerts.textContent = activeIncidents.length;
     if (dom.kpiCritical) dom.kpiCritical.textContent = criticalIncidents.length;
 
+    if (dom.alertsCountHeader) dom.alertsCountHeader.textContent = `(${activeIncidents.length})`;
     if (dom.alertsCountBadge) dom.alertsCountBadge.textContent = `${activeIncidents.length} Active`;
     if (dom.sidebarIncidentCount) dom.sidebarIncidentCount.textContent = activeIncidents.length;
+    if (dom.sidebarCamCount) dom.sidebarCamCount.textContent = totalCameras;
+
+    if (dom.filterCountAll) dom.filterCountAll.textContent = activeIncidents.length;
+    if (dom.filterCountL3) dom.filterCountL3.textContent = criticalIncidents.length;
+    if (dom.filterCountL2) dom.filterCountL2.textContent = respondIncidents.length;
+    if (dom.filterCountL1) dom.filterCountL1.textContent = observeIncidents.length;
   }
 
   // ---- Render All Views ----
@@ -383,6 +808,15 @@
       });
       video.addEventListener('pause', () => {
         video.play().catch(() => {});
+      });
+      video.addEventListener('error', (err) => {
+        console.warn(`Video load event for ${camera.id}:`, err);
+        setTimeout(() => {
+          if (video.error) {
+            video.load();
+            video.play().catch(() => {});
+          }
+        }, 1500);
       });
 
       // Assemble HUD overlays on the tile
@@ -500,6 +934,49 @@
         await triggerScenario(scenario);
       });
     });
+
+    // Wire up 'View All ->' link in alerts panel
+    const viewAllLink = document.getElementById('link-view-all-alerts');
+    if (viewAllLink) {
+      viewAllLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('incidents');
+      });
+    }
+
+    // Grid toolbar control buttons
+    const muteBtn = document.getElementById('mute-all-btn');
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        const isMuted = muteBtn.textContent.includes('Muted');
+        document.querySelectorAll('video').forEach((v) => {
+          v.muted = !isMuted;
+        });
+        const span = muteBtn.querySelector('span');
+        if (span) span.textContent = isMuted ? 'Unmuted' : 'Muted';
+      });
+    }
+
+    const refreshGridBtn = document.getElementById('refresh-grid-btn');
+    if (refreshGridBtn) {
+      refreshGridBtn.addEventListener('click', () => {
+        document.querySelectorAll('.tile-video').forEach((v) => {
+          v.currentTime = 0;
+          v.play().catch(() => {});
+        });
+      });
+    }
+
+    const fsBtn = document.getElementById('btn-fullscreen-grid');
+    if (fsBtn) {
+      fsBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          (dom.cctvGrid || document.documentElement).requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+    }
   }
 
   function setupSearch() {

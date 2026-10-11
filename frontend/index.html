@@ -15,11 +15,21 @@
   <header class="soc-topbar" id="soc-topbar">
     <div class="topbar-left">
       <div class="brand-block">
-        <div class="brand-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect x="2" y="2" width="20" height="20" rx="5" fill="#ff6b00" />
-            <circle cx="12" cy="12" r="5" stroke="#ffffff" stroke-width="2.5" />
-            <circle cx="12" cy="12" r="1.5" fill="#ffffff" />
+        <div class="brand-logo-glow">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="12" stroke="url(#swirl-grad1)" stroke-width="2.5" stroke-dasharray="60 20" />
+            <circle cx="14" cy="14" r="8" stroke="url(#swirl-grad2)" stroke-width="2" stroke-dasharray="35 15" />
+            <circle cx="14" cy="14" r="4" fill="#38bdf8" />
+            <defs>
+              <linearGradient id="swirl-grad1" x1="0" y1="0" x2="28" y2="28">
+                <stop offset="0%" stop-color="#38bdf8" />
+                <stop offset="100%" stop-color="#818cf8" />
+              </linearGradient>
+              <linearGradient id="swirl-grad2" x1="28" y1="0" x2="0" y2="28">
+                <stop offset="0%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#38bdf8" />
+              </linearGradient>
+            </defs>
           </svg>
         </div>
         <div class="brand-titles">
@@ -28,25 +38,27 @@
         </div>
       </div>
       <div class="station-selector">
-        <span class="station-icon">🚉</span>
+        <span class="station-icon">📍</span>
         <span class="station-title">Central Metro Terminal • Sector 4</span>
+        <span class="dropdown-chevron">▾</span>
       </div>
     </div>
 
     <div class="topbar-center">
       <div class="global-search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="camera-search-input" placeholder="Search cameras, zones, or IDs (e.g. CAM-03, Concourse)..." />
+        <input type="text" id="camera-search-input" placeholder="Search cameras, zones, or incident IDs (e.g. CAM-03, Concourse, Gate)" />
+        <span class="cmd-k-badge">⌘ K</span>
       </div>
     </div>
 
     <div class="topbar-right">
-      <button class="sim-launcher-btn" id="open-sim-modal-btn" title="Launch Demo Incident Scenarios">
-        <span class="sim-pulse"></span>
-        <span>Simulate Demo Incident</span>
+      <button class="sim-launcher-btn" id="open-sim-modal-btn" title="Simulate Incident">
+        <span class="sim-icon">⚠️</span>
+        <span>Simulate Incident</span>
       </button>
 
       <div class="mode-badge" title="Prerecorded video demonstration mode">
@@ -59,55 +71,52 @@
         <span id="system-status-text">ATLAS CONNECTED</span>
       </div>
 
-      <div class="clock-display" id="clock-display">00:00:00 UTC</div>
+      <div class="clock-display-block">
+        <div class="clock-time" id="clock-display">04:45:23 UTC</div>
+        <div class="clock-date" id="date-display">Oct 10, 2026</div>
+      </div>
+
+      <div class="user-avatar-btn" title="SOC Security Officer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
     </div>
   </header>
 
-  <!-- Main Layout Container: Slim Sidebar + Dynamic Content -->
+  <!-- Main Layout Container: Expanded Sidebar + Dynamic Content -->
   <div class="soc-layout">
-    <!-- Slim Vertical Sidebar -->
+    <!-- Expanded Vertical Sidebar -->
     <aside class="soc-sidebar" id="soc-sidebar">
       <nav class="sidebar-nav">
         <button class="nav-item active" data-view="dashboard" id="nav-dashboard">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"/>
-            <rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
           <span class="nav-label">Dashboard</span>
         </button>
 
         <button class="nav-item" data-view="cameras" id="nav-cameras">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
             <circle cx="12" cy="13" r="4"/>
           </svg>
-          <span class="nav-label">Cameras</span>
-          <span class="nav-badge" id="sidebar-cam-count">9</span>
-        </button>
-
-        <button class="nav-item" data-view="venue-map" id="nav-venue-map">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-            <line x1="8" y1="2" x2="8" y2="18"/>
-            <line x1="16" y1="6" x2="16" y2="22"/>
-          </svg>
-          <span class="nav-label">Venue Map</span>
+          <span class="nav-label">Live Cameras</span>
         </button>
 
         <button class="nav-item" data-view="incidents" id="nav-incidents">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
-          <span class="nav-label">Incidents</span>
-          <span class="nav-badge alert-count" id="sidebar-incident-count">3</span>
+          <span class="nav-label">Incident Alerts</span>
+          <span class="nav-badge alert-count" id="sidebar-incident-count">5</span>
         </button>
 
         <button class="nav-item" data-view="analytics" id="nav-analytics">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="20" x2="18" y2="10"/>
             <line x1="12" y1="20" x2="12" y2="4"/>
             <line x1="6" y1="20" x2="6" y2="14"/>
@@ -115,8 +124,28 @@
           <span class="nav-label">Analytics</span>
         </button>
 
+        <button class="nav-item" data-view="venue-map" id="nav-venue-map">
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+          <span class="nav-label">Venue Map</span>
+        </button>
+
+        <button class="nav-item" data-view="reports" id="nav-reports">
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span class="nav-label">Reports</span>
+        </button>
+
         <button class="nav-item" data-view="settings" id="nav-settings">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="nav-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
@@ -124,10 +153,52 @@
         </button>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="system-mini-info">
-          <span class="version-tag">v2.4 Core</span>
-          <span class="gridfs-tag" id="sidebar-gridfs-status">GridFS Active</span>
+      <!-- System Status Card -->
+      <div class="sidebar-status-card">
+        <div class="status-card-header">System Status</div>
+        <div class="status-card-list">
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span class="status-name">Atlas Grids</span>
+            <span class="status-val">Online</span>
+          </div>
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span class="status-name">Camera Streams</span>
+            <span class="status-val">Online</span>
+          </div>
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span class="status-name">AI Analytics</span>
+            <span class="status-val">Online</span>
+          </div>
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span class="status-name">Alert Engine</span>
+            <span class="status-val">Online</span>
+          </div>
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span class="status-name">Database</span>
+            <span class="status-val">Online</span>
+          </div>
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span class="status-name">All Systems</span>
+            <span class="status-val">Operational</span>
+          </div>
+        </div>
+
+        <!-- Radial Gauge -->
+        <div class="uptime-gauge-wrap">
+          <svg class="radial-gauge-svg" width="110" height="110" viewBox="0 0 110 110">
+            <circle class="gauge-bg" cx="55" cy="55" r="44" />
+            <circle class="gauge-fill" cx="55" cy="55" r="44" stroke-dasharray="276" stroke-dashoffset="3" />
+          </svg>
+          <div class="gauge-text-overlay">
+            <span class="gauge-percent">99.9%</span>
+            <span class="gauge-sub">Uptime</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -139,58 +210,96 @@
       <section class="view-panel active" id="view-dashboard">
         <!-- Top KPI Cards Bar -->
         <div class="kpi-cards-grid">
-          <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-green">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
+          <!-- Card 1: Cameras Online -->
+          <div class="kpi-card kpi-purple">
+            <div class="kpi-left-col">
+              <div class="kpi-icon-box box-purple">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 3.5V7l-4 3.5z"/>
+                </svg>
+              </div>
+              <div class="kpi-metrics">
+                <div class="kpi-value" id="kpi-cameras-online">9 / 9</div>
+                <div class="kpi-label">Cameras Online</div>
+                <div class="kpi-subtext sub-green">
+                  <span class="sub-dot green"></span> Live & Streaming
+                </div>
+              </div>
             </div>
-            <div class="kpi-content">
-              <div class="kpi-value" id="kpi-cameras-online">9 / 9</div>
-              <div class="kpi-label">Cameras Online & Streaming</div>
+            <div class="kpi-sparkline">
+              <svg width="90" height="42" viewBox="0 0 90 42" fill="none">
+                <path d="M2 32 C 15 28, 25 38, 40 22 C 55 8, 65 24, 75 14 L 88 18" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-blue">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
+          <!-- Card 2: Incidents Today -->
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-left-col">
+              <div class="kpi-icon-box box-blue">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+              </div>
+              <div class="kpi-metrics">
+                <div class="kpi-value" id="kpi-incidents-today">5</div>
+                <div class="kpi-label">Incidents Today</div>
+                <div class="kpi-subtext sub-cyan">
+                  ↑ 2 vs yesterday
+                </div>
+              </div>
             </div>
-            <div class="kpi-content">
-              <div class="kpi-value" id="kpi-incidents-today">4</div>
-              <div class="kpi-label">Incidents Today</div>
+            <div class="kpi-sparkline">
+              <svg width="70" height="42" viewBox="0 0 70 42" fill="none">
+                <rect x="6" y="24" width="6" height="18" rx="2" fill="#38bdf8" opacity="0.6"/>
+                <rect x="18" y="18" width="6" height="24" rx="2" fill="#38bdf8" opacity="0.7"/>
+                <rect x="30" y="28" width="6" height="14" rx="2" fill="#38bdf8" opacity="0.6"/>
+                <rect x="42" y="12" width="6" height="30" rx="2" fill="#38bdf8" opacity="0.85"/>
+                <rect x="54" y="6" width="6" height="36" rx="2" fill="#38bdf8"/>
+              </svg>
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-icon-wrap kpi-amber">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 2 22 22 22"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
+          <!-- Card 3: Active Operational Alerts -->
+          <div class="kpi-card kpi-amber">
+            <div class="kpi-left-col">
+              <div class="kpi-icon-box box-amber">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                </svg>
+              </div>
+              <div class="kpi-metrics">
+                <div class="kpi-value" id="kpi-active-alerts">5</div>
+                <div class="kpi-label">Active Operational Alerts</div>
+              </div>
             </div>
-            <div class="kpi-content">
-              <div class="kpi-value" id="kpi-active-alerts">4</div>
-              <div class="kpi-label">Active Operational Alerts</div>
+            <div class="kpi-sparkline">
+              <svg width="90" height="42" viewBox="0 0 90 42" fill="none">
+                <path d="M2 28 C 15 36, 28 14, 45 26 C 60 36, 72 16, 88 12" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </div>
           </div>
 
-          <div class="kpi-card kpi-card-critical">
-            <div class="kpi-icon-wrap kpi-red">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
+          <!-- Card 4: Level 3 Critical Alert -->
+          <div class="kpi-card kpi-red">
+            <div class="kpi-left-col">
+              <div class="kpi-icon-box box-red">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L1 21h22L12 2zm0 4l7.53 13H4.47L12 6zm-1 5v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+                </svg>
+              </div>
+              <div class="kpi-metrics">
+                <div class="kpi-value" id="kpi-critical-alerts">1</div>
+                <div class="kpi-label">Level 3 Critical Alert</div>
+                <div class="kpi-subtext sub-red">
+                  <span class="sub-dot red"></span> Requires Immediate Attention
+                </div>
+              </div>
             </div>
-            <div class="kpi-content">
-              <div class="kpi-value" id="kpi-critical-alerts">1</div>
-              <div class="kpi-label">Level 3 Critical Alerts</div>
+            <div class="kpi-sparkline">
+              <svg width="90" height="42" viewBox="0 0 90 42" fill="none">
+                <path d="M2 24 L 20 24 L 26 14 L 32 34 L 38 18 L 44 28 L 50 24 L 62 24 L 68 8 L 74 38 L 80 24 L 88 24" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </div>
           </div>
         </div>
@@ -201,12 +310,46 @@
           <div class="camera-monitor-container">
             <div class="section-subbar">
               <div class="section-title-wrap">
-                <h2 class="section-heading">CCTV Live Feeds (3×3 Grid)</h2>
-                <span class="section-subtext">Continuous streaming from MongoDB Atlas GridFS • HTTP 206 Range Seekable</span>
+                <h2 class="section-heading"><span class="purple-dot">●</span> CCTV Live Feeds (3×3 Grid)</h2>
+                <span class="section-subtext">Real-time video streaming from MongoDB Atlas GridFS • HTTP 206 Range Seekable</span>
               </div>
               <div class="feed-controls">
-                <button class="small-ctrl-btn" id="mute-all-btn" title="Toggle audio on active player">Muted</button>
-                <button class="small-ctrl-btn" id="refresh-grid-btn" title="Refresh feeds">Sync Feeds</button>
+                <button class="grid-mode-btn active" id="btn-grid-layout" title="3x3 Grid View">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                  </svg>
+                </button>
+                <button class="grid-mode-btn" id="btn-list-layout" title="List View">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="4" y1="6" x2="20" y2="6"/>
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                    <line x1="4" y1="18" x2="20" y2="18"/>
+                  </svg>
+                </button>
+                <button class="ctrl-pill-btn" id="mute-all-btn" title="Toggle Audio">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/>
+                    <line x1="17" y1="9" x2="23" y2="15"/>
+                  </svg>
+                  <span>Muted</span>
+                </button>
+                <button class="ctrl-pill-btn" id="refresh-grid-btn" title="Sync All Feeds">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                  </svg>
+                  <span>Sync Feeds</span>
+                </button>
+                <button class="grid-mode-btn" id="btn-fullscreen-grid" title="Fullscreen">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -221,34 +364,36 @@
             <div class="alerts-panel-header">
               <div class="alerts-title-row">
                 <div class="alerts-heading">
-                  <span class="alert-bell-icon">🚨</span>
-                  <h3>Active Incident Alerts</h3>
+                  <span class="alert-bell-icon">🔔</span>
+                  <h3>Active Incident Alerts <span id="alerts-count-header">(5)</span></h3>
                 </div>
-                <span class="active-pill" id="alerts-count-badge">4 Active</span>
+                <a href="#incidents" class="view-all-link" id="link-view-all-alerts">View All →</a>
               </div>
 
               <!-- Severity Filter Pills -->
               <div class="alert-filter-pills" id="alert-filter-pills">
-                <button class="filter-pill active" data-filter="All">All</button>
-                <button class="filter-pill pill-emergency" data-filter="Emergency">Level 3 (Emerg)</button>
-                <button class="filter-pill pill-respond" data-filter="Respond">Level 2 (Resp)</button>
-                <button class="filter-pill pill-observe" data-filter="Observe">Level 1 (Obs)</button>
+                <button class="filter-pill active" data-filter="All">
+                  <span>All</span>
+                  <span class="pill-badge badge-all" id="filter-count-all">5</span>
+                </button>
+                <button class="filter-pill" data-filter="Emergency">
+                  <span>Level 3</span>
+                  <span class="pill-badge badge-red" id="filter-count-l3">1</span>
+                </button>
+                <button class="filter-pill" data-filter="Respond">
+                  <span>Level 2</span>
+                  <span class="pill-badge badge-amber" id="filter-count-l2">2</span>
+                </button>
+                <button class="filter-pill" data-filter="Observe">
+                  <span>Level 1</span>
+                  <span class="pill-badge badge-blue" id="filter-count-l1">2</span>
+                </button>
               </div>
             </div>
 
-            <!-- List of Alert Cards -->
+            <!-- List of Alert Cards with Video Thumbnails -->
             <div class="alerts-cards-list" id="alerts-cards-list">
               <!-- Populated dynamically -->
-            </div>
-
-            <!-- Quick Demo Incident Trigger Bar at bottom of alert panel -->
-            <div class="alerts-panel-footer">
-              <span class="footer-hint">Test Scenario Triggers:</span>
-              <div class="quick-sim-buttons">
-                <button class="btn-quick-sim" data-scenario="person_on_track" title="Level 3: Person on track (CAM-08)">Track Intrusion (L3)</button>
-                <button class="btn-quick-sim" data-scenario="unattended_object" title="Level 1: Unattended Bag (CAM-03)">Unattended Bag (L1)</button>
-                <button class="btn-quick-sim" data-scenario="restricted_zone" title="Level 2: Vault Intrusion (CAM-04)">Vault Breach (L2)</button>
-              </div>
             </div>
           </aside>
         </div>
@@ -425,9 +570,74 @@
             <div class="bar-chart-container" id="chart-by-camera"></div>
           </div>
         </div>
+      <!-- ================= VIEW 6: REPORTS ================= -->
+      <section class="view-panel" id="view-reports">
+        <div class="view-header-bar">
+          <div>
+            <h2 class="view-heading">SOC Situation & Incident Audit Reports</h2>
+            <p class="view-description">Exportable daily shift audit summaries, crisis event logs, and AI vision logs for transit authorities.</p>
+          </div>
+          <button class="btn-primary" id="btn-export-daily-report">Export Shift Audit (PDF/JSON)</button>
+        </div>
+
+        <div class="reports-summary-cards">
+          <div class="metric-box">
+            <span class="metric-num">5</span>
+            <span class="metric-label">Logged Incidents Shift Total</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num text-green">100%</span>
+            <span class="metric-label">Operator Verification Rate</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num text-cyan">9 Feeds</span>
+            <span class="metric-label">Audit Retention Coverage</span>
+          </div>
+        </div>
+
+        <div class="incidents-table-wrap" style="margin-top: 20px;">
+          <table class="soc-table">
+            <thead>
+              <tr>
+                <th>Report Ref</th>
+                <th>Time (UTC)</th>
+                <th>Station Zone</th>
+                <th>Event Summary</th>
+                <th>Classification</th>
+                <th>Triage Officer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>REP-2026-10-10-A</code></td>
+                <td>2026-10-10 23:15:23</td>
+                <td>Central Concourse Corridor</td>
+                <td>Unattended Luggage Package inspection and marshal dispatch</td>
+                <td><span class="status-badge badge-emergency">Level 3</span></td>
+                <td>Duty SOC Lead</td>
+              </tr>
+              <tr>
+                <td><code>REP-2026-10-10-B</code></td>
+                <td>2026-10-10 22:45:10</td>
+                <td>Security Operations & Tech Vault</td>
+                <td>Unauthorized badge perimeter attempt flagged and verified</td>
+                <td><span class="status-badge badge-respond">Level 2</span></td>
+                <td>Perimeter Security</td>
+              </tr>
+              <tr>
+                <td><code>REP-2026-10-10-C</code></td>
+                <td>2026-10-10 21:10:04</td>
+                <td>West Stairwell Overbridge</td>
+                <td>Crowd congestion peak managed via escalator redirection</td>
+                <td><span class="status-badge badge-observe">Level 1</span></td>
+                <td>Marshall Team 2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <!-- ================= VIEW 6: SETTINGS ================= -->
+      <!-- ================= VIEW 7: SETTINGS ================= -->
       <section class="view-panel" id="view-settings">
         <div class="view-header-bar">
           <div>
