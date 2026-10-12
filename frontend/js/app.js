@@ -1135,114 +1135,114 @@
     });
   }
 
-  // ================= HERO LANDING PAGE CONTROLLER & AUTH =================
+  // ================= CENTRAL METRO SURVEILLANCE PORTAL & GUARD AUTH =================
   function setupLandingPage() {
     const landingPage = document.getElementById('landing-page');
     const dashboardApp = document.getElementById('dashboard-app');
-    const btnLandingQuickDemo = document.getElementById('btn-landing-quick-demo');
-    const btnLandingEnterDashboard = document.getElementById('btn-landing-enter-dashboard');
-    const btnHeroLaunchSoc = document.getElementById('btn-hero-launch-soc');
-    const btnInstantDemoAuth = document.getElementById('btn-instant-demo-auth');
-    const btnFooterEnterDashboard = document.getElementById('btn-footer-enter-dashboard');
+    const guardForm = document.getElementById('guard-access-form');
+    const guardIdInput = document.getElementById('guard-id-input');
+    const guardPassInput = document.getElementById('guard-access-code');
+    const btnTogglePwd = document.getElementById('btn-toggle-pwd');
+    const eyeIconOpen = document.getElementById('eye-icon-open');
+    const eyeIconClosed = document.getElementById('eye-icon-closed');
+    const btnSubmit = document.getElementById('btn-access-dashboard');
     const btnReturnLanding = document.getElementById('btn-return-landing');
 
-    const tabAuthLogin = document.getElementById('tab-auth-login');
-    const tabAuthSignup = document.getElementById('tab-auth-signup');
-    const formLogin = document.getElementById('form-login');
-    const formSignup = document.getElementById('form-signup');
+    // Toggle Password Visibility
+    if (btnTogglePwd && guardPassInput) {
+      btnTogglePwd.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isPassword = guardPassInput.type === 'password';
+        guardPassInput.type = isPassword ? 'text' : 'password';
+        if (eyeIconOpen && eyeIconClosed) {
+          eyeIconOpen.style.display = isPassword ? 'none' : 'block';
+          eyeIconClosed.style.display = isPassword ? 'block' : 'none';
+        }
+      });
+    }
 
-    function enterDashboard(userRole = 'Chief Commander Alex Vance', station = 'Central Metro Terminal • Sector 4') {
-      if (landingPage) landingPage.style.display = 'none';
-      if (dashboardApp) {
-        dashboardApp.style.display = 'flex';
+    function enterDashboard(userRole = 'Officer GUARD-047', station = 'Central Metro Terminal • Sector 4') {
+      if (btnSubmit) {
+        btnSubmit.classList.add('authenticating');
+        btnSubmit.innerHTML = `
+          <span class="btn-guard-label">Verifying Clearance...</span>
+          <span style="display:inline-block; width:14px; height:14px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite; margin-left:6px;"></span>
+        `;
       }
-      document.body.classList.remove('on-landing');
-      document.body.style.overflow = 'hidden';
 
-      // Explicitly switch to dashboard view and fresh render
-      switchView('dashboard');
-      renderAll();
-
-      // Ensure all videos play continuously
       setTimeout(() => {
-        document.querySelectorAll('video').forEach((v) => {
-          v.muted = true;
-          v.defaultMuted = true;
-          v.play().catch(() => {});
-        });
-      }, 50);
+        if (landingPage) landingPage.style.display = 'none';
+        if (dashboardApp) {
+          dashboardApp.style.display = 'flex';
+        }
+        document.body.classList.remove('on-landing');
+        document.body.style.overflow = 'hidden';
 
-      // Show toast notification
-      showToast(`Access Granted: ${userRole} authenticated for ${station}`, 'success');
-      localStorage.setItem('presense_session', JSON.stringify({ role: userRole, station: station, timestamp: Date.now() }));
+        // Explicitly switch to dashboard view and fresh render
+        switchView('dashboard');
+        renderAll();
+
+        // Ensure all videos play continuously
+        setTimeout(() => {
+          document.querySelectorAll('video').forEach((v) => {
+            v.muted = true;
+            v.defaultMuted = true;
+            v.play().catch(() => {});
+          });
+        }, 50);
+
+        // Show toast notification
+        showToast(`Security Clearance Verified: ${userRole} authenticated for ${station}`, 'success');
+        localStorage.setItem('presense_session', JSON.stringify({ role: userRole, station: station, timestamp: Date.now() }));
+
+        if (btnSubmit) {
+          btnSubmit.classList.remove('authenticating');
+          btnSubmit.innerHTML = `
+            <span class="btn-guard-label">Access Dashboard</span>
+            <span class="btn-guard-arrow">→</span>
+          `;
+        }
+      }, 400);
     }
 
     function exitToLanding() {
       if (dashboardApp) dashboardApp.style.display = 'none';
       if (landingPage) landingPage.style.display = 'flex';
       document.body.classList.add('on-landing');
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = 'hidden';
       localStorage.removeItem('presense_session');
+      showToast('Portal Locked • Ready for Guard Authentication', 'info');
     }
 
-    // Connect landing action buttons
-    if (btnLandingQuickDemo) btnLandingQuickDemo.addEventListener('click', () => enterDashboard());
-    if (btnLandingEnterDashboard) btnLandingEnterDashboard.addEventListener('click', () => enterDashboard());
-    if (btnHeroLaunchSoc) btnHeroLaunchSoc.addEventListener('click', () => enterDashboard());
-    if (btnInstantDemoAuth) btnInstantDemoAuth.addEventListener('click', () => enterDashboard());
-    if (btnFooterEnterDashboard) btnFooterEnterDashboard.addEventListener('click', () => enterDashboard());
-    if (btnReturnLanding) btnReturnLanding.addEventListener('click', exitToLanding);
-
-    // Tab switching between Sign In & Sign Up
-    if (tabAuthLogin && tabAuthSignup) {
-      tabAuthLogin.addEventListener('click', () => {
-        tabAuthLogin.classList.add('active');
-        tabAuthSignup.classList.remove('active');
-        if (formLogin) formLogin.style.display = 'flex';
-        if (formSignup) formSignup.style.display = 'none';
-      });
-
-      tabAuthSignup.addEventListener('click', () => {
-        tabAuthSignup.classList.add('active');
-        tabAuthLogin.classList.remove('active');
-        if (formLogin) formLogin.style.display = 'none';
-        if (formSignup) formSignup.style.display = 'flex';
-      });
-    }
-
-    // Login Form Submit
-    if (formLogin) {
-      formLogin.addEventListener('submit', (e) => {
+    // Connect form submission
+    if (guardForm) {
+      guardForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email')?.value || 'SOC Operator';
-        const station = document.getElementById('login-station')?.value || 'Central Metro Terminal • Sector 4';
-        const namePart = email.split('@')[0].replace('.', ' ').toUpperCase();
-        enterDashboard(`Officer ${namePart}`, station);
+        const guardId = guardIdInput ? guardIdInput.value.trim() : '';
+        const passCode = guardPassInput ? guardPassInput.value.trim() : '';
+
+        if (!guardId) {
+          showToast('Please enter your Guard ID to proceed', 'warning');
+          if (guardIdInput) guardIdInput.focus();
+          return;
+        }
+        if (!passCode) {
+          showToast('Please enter your Special Access Code', 'warning');
+          if (guardPassInput) guardPassInput.focus();
+          return;
+        }
+
+        enterDashboard(`Officer (${guardId})`, 'Central Metro Terminal • Sector 4');
       });
     }
 
-    // Signup Form Submit
-    if (formSignup) {
-      formSignup.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('signup-name')?.value || 'Chief Operator';
-        const dept = document.getElementById('signup-dept')?.value || 'Transit SOC';
-        enterDashboard(`${name} (${dept})`, 'Central Metro Terminal • Sector 4');
-      });
+    // Connect topbar exit/lock button
+    if (btnReturnLanding) {
+      btnReturnLanding.addEventListener('click', exitToLanding);
     }
 
-    // Default directly to dashboard view matching the reference design specification
-    const existing = localStorage.getItem('presense_session');
-    if (existing) {
-      try {
-        const parsed = JSON.parse(existing);
-        enterDashboard(parsed.role, parsed.station);
-      } catch (_) {
-        enterDashboard();
-      }
-    } else {
-      enterDashboard();
-    }
+    // Always display landing portal first when loading
+    exitToLanding();
   }
 
   // ================= DEDICATED CCTV VIDEO SCROLL CONTROLS =================

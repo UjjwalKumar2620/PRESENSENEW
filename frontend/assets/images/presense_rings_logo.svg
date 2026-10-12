@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <!-- Smooth Champagne Gold Gradient matching user's PreSense emblem -->
+    <linearGradient id="champagneGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#fffbeb" />
+      <stop offset="55%" stop-color="#fef08a" />
+      <stop offset="85%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+    <linearGradient id="innerArcGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="30%" stop-color="#fef3c7" />
+      <stop offset="70%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Arc 1: Top-Right (from 225° to 42° clockwise, radius 55) -->
+  <path d="M 41.11 41.11 A 55 55 0 0 1 120.87 116.80" 
+        stroke="url(#champagneGoldGrad)" 
+        stroke-width="7.5" 
+        stroke-linecap="round" 
+        fill="none" />
+
+  <!-- Outer Arc 2: Lower-Left (from 72° to 175° clockwise, radius 55) -->
+  <path d="M 97.00 132.31 A 55 55 0 0 1 25.21 84.79" 
+        stroke="url(#champagneGoldGrad)" 
+        stroke-width="7.5" 
+        stroke-linecap="round" 
+        fill="none" />
+
+  <!-- Inner Arc: 335° loop with lower-left gap (from 135° to 110° clockwise, radius 37) -->
+  <path d="M 53.84 106.16 A 37 37 0 1 1 67.35 114.77" 
+        stroke="url(#innerArcGrad)" 
+        stroke-width="7" 
+        stroke-linecap="round" 
+        fill="none" />
+</svg>

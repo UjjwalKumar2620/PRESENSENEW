@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="goldMetroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="35%" stop-color="#fef08a" />
+      <stop offset="70%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#c47a06" />
+    </linearGradient>
+  </defs>
+  <!-- Outer Gold Circle -->
+  <circle cx="50" cy="50" r="42" stroke="url(#goldMetroGrad)" stroke-width="6" fill="none" />
+  <!-- Upper Horizontal Track Bar -->
+  <path d="M 12 41 L 88 41" stroke="url(#goldMetroGrad)" stroke-width="5.5" stroke-linecap="round" />
+  <!-- Lower Horizontal Track Bar -->
+  <path d="M 12 59 L 88 59" stroke="url(#goldMetroGrad)" stroke-width="5.5" stroke-linecap="round" />
+  <!-- Center Diagonal Connector (Metro track crossover) -->
+  <path d="M 58 41 L 42 59" stroke="url(#goldMetroGrad)" stroke-width="6" stroke-linecap="round" />
+</svg>

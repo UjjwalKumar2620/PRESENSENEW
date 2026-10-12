@@ -1,0 +1,18 @@
+{
+  "name": "presense",
+  "version": "1.0.0",
+  "description": "PreSense — AI-Powered CCTV Monitoring & Rapid Crisis Response",
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "start": "cd backend && npm start",
+    "backend": "cd backend && npm start"
+  },
+  "keywords": [
+    "presense",
+    "cctv",
+    "surveillance",
+    "ai"
+  ],
+  "author": "",
+  "license": "ISC"
+}

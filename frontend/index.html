@@ -11,268 +11,208 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="soc-body">
-  <!-- ================= HERO LANDING PAGE: GOLD & OBSIDIAN BLACK THEME ================= -->
-  <div id="landing-page" class="landing-page-wrap" style="display: none;">
-    <!-- Landing Top Navigation -->
-    <header class="landing-nav">
-      <div class="landing-nav-left">
-        <a href="#" class="landing-brand">
-          <div class="landing-brand-logo">
-            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="14" r="12" stroke="url(#gold-landing-grad1)" stroke-width="2.5" stroke-dasharray="60 20" />
-              <circle cx="14" cy="14" r="8" stroke="url(#gold-landing-grad2)" stroke-width="2" stroke-dasharray="35 15" />
-              <circle cx="14" cy="14" r="4" fill="#f59e0b" />
-              <defs>
-                <linearGradient id="gold-landing-grad1" x1="0" y1="0" x2="28" y2="28">
-                  <stop offset="0%" stop-color="#fbbf24" />
-                  <stop offset="100%" stop-color="#d97706" />
-                </linearGradient>
-                <linearGradient id="gold-landing-grad2" x1="28" y1="0" x2="0" y2="28">
-                  <stop offset="0%" stop-color="#fef08a" />
-                  <stop offset="100%" stop-color="#f59e0b" />
-                </linearGradient>
-              </defs>
-            </svg>
+  <!-- ================= CENTRAL METRO SURVEILLANCE PORTAL LANDING PAGE ================= -->
+  <div id="landing-page" class="portal-landing-wrap">
+    <!-- LEFT HALF: HIGH-DEFINITION PRE-SENSE SECURITY COMMAND HERO STAGE -->
+    <div class="portal-left-panel" id="hero-command-stage">
+      <!-- Crystal-Clear 2K Backdrop -->
+      <div class="hero-stage-backdrop" aria-hidden="true"></div>
+
+      <!-- Atmospheric Edge Vignette & Smooth Gradient Blend -->
+      <div class="hero-stage-vignette" aria-hidden="true"></div>
+
+      <!-- Surveillance HUD Telemetry & Viewfinder Framing -->
+      <div class="hero-stage-hud">
+        <!-- Top Status & Telemetry Bar -->
+        <div class="hero-top-hud">
+          <div class="hero-live-badge">
+            <span class="live-dot-pulse"></span>
+            <span class="live-tag-text">LIVE SURVEILLANCE FEED</span>
           </div>
-          <div class="landing-brand-titles">
-            <span class="landing-brand-name">PreSense</span>
-            <span class="landing-brand-tag">CRISIS RESPONSE SOC</span>
-          </div>
-        </a>
-
-        <nav class="landing-nav-links">
-          <a href="#features-section" class="landing-nav-link">Capabilities</a>
-          <a href="#features-section" class="landing-nav-link">GridFS Video Feeds</a>
-          <a href="#features-section" class="landing-nav-link">Vision AI Engine</a>
-          <a href="#features-section" class="landing-nav-link">Crisis Escalation</a>
-        </nav>
-      </div>
-
-      <div class="landing-nav-right">
-        <button class="btn-landing-demo" id="btn-landing-quick-demo">
-          <span>⚡</span>
-          <span>1-Click Operator Demo</span>
-        </button>
-        <button class="btn-landing-dashboard" id="btn-landing-enter-dashboard">
-          <span>Enter SOC Dashboard</span>
-          <span>→</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="landing-hero">
-      <!-- Left Column: Vision & Pitch -->
-      <div class="hero-content">
-        <div class="hero-pill-badge">
-          <span>🛡️</span>
-          <span>AUTONOMOUS TRANSIT SURVEILLANCE & RAPID ESCALATION</span>
-        </div>
-
-        <h1 class="hero-headline">
-          Intelligent CCTV Vision &amp; <br />
-          <span class="hero-gold-text">Instant Crisis Triage</span>
-        </h1>
-
-        <p class="hero-subhead">
-          PreSense protects metropolitan railway terminals, subway platforms, and high-density corridors with real-time multi-feed vision intelligence. Engineered for zero-buffering MongoDB Atlas GridFS streaming and automated 3-level incident triage.
-        </p>
-
-        <div class="hero-tech-highlights">
-          <div class="hero-highlight-item">
-            <span class="hero-check-icon">✓</span>
-            <span><strong>9-Feed Concurrent Video</strong> directly from Atlas GridFS</span>
-          </div>
-          <div class="hero-highlight-item">
-            <span class="hero-check-icon">✓</span>
-            <span><strong>OpenRouter Multimodal AI</strong> visual hazard analysis</span>
-          </div>
-          <div class="hero-highlight-item">
-            <span class="hero-check-icon">✓</span>
-            <span><strong>HTTP 206 Seekable</strong> high-throughput playback</span>
-          </div>
-          <div class="hero-highlight-item">
-            <span class="hero-check-icon">✓</span>
-            <span><strong>3-Tier Dynamic Crisis Matrix</strong> (Observe, Respond, Emergency)</span>
+          <div class="hero-cam-telemetry">
+            <span class="telemetry-item"><span class="hud-icon">◉</span> CAM-04A</span>
+            <span class="telemetry-sep">•</span>
+            <span class="telemetry-item">METRO CENTRAL</span>
+            <span class="telemetry-sep">•</span>
+            <span class="telemetry-fps">60 FPS UHD</span>
           </div>
         </div>
 
-        <div class="hero-actions-row">
-          <button class="btn-hero-primary" id="btn-hero-launch-soc">
-            <span>🚀 Launch Live SOC Dashboard (1-Click Demo)</span>
-            <span>→</span>
-          </button>
+        <!-- Viewfinder Reticles -->
+        <div class="hud-reticle reticle-tl" aria-hidden="true"></div>
+        <div class="hud-reticle reticle-tr" aria-hidden="true"></div>
+        <div class="hud-reticle reticle-bl" aria-hidden="true"></div>
+        <div class="hud-reticle reticle-br" aria-hidden="true"></div>
+      </div>
+
+      <!-- Center Hero Branding (Vector SVG + Native Typography) -->
+      <div class="hero-center-brand">
+        <!-- Aperture Golden Rings Vector Logo -->
+        <div class="hero-brand-rings-wrap">
+          <img src="assets/images/presense_rings_logo.svg" alt="PreSense Emblem" class="hero-brand-rings" />
+        </div>
+
+        <!-- Crisp Modern Sans Title -->
+        <h1 class="hero-brand-title">PreSense</h1>
+
+        <!-- Elegant Geometric Tagline with Hairline Rules -->
+        <div class="hero-brand-tagline">
+          <span class="tagline-rule left-rule"></span>
+          <span class="tagline-text">SAFER SPACES STRONGER COMMUNITIES</span>
+          <span class="tagline-rule right-rule"></span>
         </div>
       </div>
 
-      <!-- Right Column: Operator Authentication Card -->
-      <div class="hero-auth-portal">
-        <div class="auth-header">
-          <div class="auth-title-wrap">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <h3>SOC Operator Access</h3>
-          </div>
-          <span class="auth-status-badge">● ATLAS READY</span>
-        </div>
+    </div>
 
-        <!-- Auth Tabs -->
-        <div class="auth-tabs-row">
-          <button class="auth-tab-btn active" id="tab-auth-login">Sign In</button>
-          <button class="auth-tab-btn" id="tab-auth-signup">Create Operator Profile</button>
-        </div>
+    <!-- RIGHT HALF: OBSIDIAN GUARD ACCESS PORTAL -->
+    <div class="portal-right-panel">
+      <!-- Watermark of State Emblem of India in subtle gold -->
+      <div class="portal-watermark-emblem" aria-hidden="true">
+        <img src="assets/images/emblem_india.svg" alt="" />
+      </div>
 
-        <!-- Sign In Form -->
-        <form class="auth-form" id="form-login">
-          <div class="auth-field-group">
-            <label class="auth-label">Operator ID or Official Email</label>
-            <div class="auth-input-wrap">
-              <input type="text" class="auth-input" id="login-email" placeholder="commander.ops@metro.presense.soc" value="commander.ops@metro.presense.soc" required />
+      <!-- Top Title Ribbon -->
+      <div class="portal-ribbon-header">
+        <span class="ribbon-line"></span>
+        <span class="ribbon-title">CENTRAL METRO SURVEILLANCE PORTAL</span>
+        <span class="ribbon-line"></span>
+      </div>
+
+      <!-- Center Guard Access Glassmorphic Card -->
+      <div class="guard-card-wrapper">
+        <div class="guard-access-card">
+          <!-- Circular Glowing Key Badge -->
+          <div class="key-badge-container">
+            <div class="key-badge-ring-pulse"></div>
+            <div class="key-badge-circle">
+              <!-- Golden Key tilted diagonally matching the design -->
+              <svg class="key-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <circle cx="8" cy="16" r="3.8" stroke="#f6bd60" stroke-width="2" />
+                <circle cx="8" cy="16" r="1.3" fill="#f6bd60" />
+                <path d="M10.8 13.2L19 5" stroke="#f6bd60" stroke-width="2.2" stroke-linecap="round" />
+                <path d="M16 8L18.5 10.5" stroke="#f6bd60" stroke-width="2" stroke-linecap="round" />
+                <path d="M18.8 5.2L20.2 6.6" stroke="#f6bd60" stroke-width="2" stroke-linecap="round" />
+              </svg>
             </div>
           </div>
 
-          <div class="auth-field-group">
-            <label class="auth-label">Secure Access Key / Passcode</label>
-            <div class="auth-input-wrap">
-              <input type="password" class="auth-input" id="login-password" placeholder="••••••••••••" value="SOC-DEMO-2026" required />
+          <!-- Card Titles -->
+          <h2 class="guard-card-title">Guard Access</h2>
+          <p class="guard-card-desc">Enter your Guard ID and Special Access Code to continue</p>
+
+          <!-- Guard Login Form -->
+          <form id="guard-access-form" class="guard-login-form">
+            <!-- Guard ID Field -->
+            <div class="guard-field-wrap">
+              <span class="guard-field-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                id="guard-id-input" 
+                class="guard-input-element" 
+                placeholder="Guard ID" 
+                value=""
+                required 
+              />
             </div>
-          </div>
 
-          <div class="auth-field-group">
-            <label class="auth-label">Operational Hub / Sector</label>
-            <select class="auth-select" id="login-station">
-              <option value="Central Metro Terminal - Sector 4" selected>Central Metro Terminal • Sector 4</option>
-              <option value="North Intermodal Transit Plaza">North Intermodal Transit Plaza</option>
-              <option value="South Concourse Retail & Egress">South Concourse Retail &amp; Egress</option>
-            </select>
-          </div>
+            <!-- Special Access Code Field -->
+            <div class="guard-field-wrap">
+              <span class="guard-field-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input 
+                type="password" 
+                id="guard-access-code" 
+                class="guard-input-element" 
+                placeholder="Special Access Code" 
+                value=""
+                required 
+              />
+              <button type="button" class="btn-toggle-eye" id="btn-toggle-pwd" title="Toggle password visibility">
+                <svg id="eye-icon-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="eye-icon-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
 
-          <button type="submit" class="btn-auth-submit" id="btn-login-submit">
-            Authenticate &amp; Enter SOC →
-          </button>
+            <!-- Remember Device Checkbox -->
+            <label class="remember-checkbox-label" for="remember-device-check">
+              <input type="checkbox" id="remember-device-check" class="native-gold-checkbox" checked />
+              <span class="custom-gold-checkbox">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="remember-text">Remember this device</span>
+            </label>
 
-          <div class="auth-divider">
-            <div class="auth-divider-line"></div>
-            <span class="auth-divider-text">Or Instant Verification</span>
-            <div class="auth-divider-line"></div>
-          </div>
-
-          <button type="button" class="btn-quick-demo" id="btn-instant-demo-auth">
-            <span>⚡ Instant 1-Click Demo Operator Access</span>
-          </button>
-
-          <p class="auth-security-notice">
-            🔒 End-to-End Encrypted SOC Channel • GridFS Stream Authorized
-          </p>
-        </form>
-
-        <!-- Sign Up Form (hidden by default) -->
-        <form class="auth-form" id="form-signup" style="display: none;">
-          <div class="auth-field-group">
-            <label class="auth-label">Operator Full Name &amp; Rank</label>
-            <input type="text" class="auth-input" id="signup-name" placeholder="Chief Inspector Alex Vance" required />
-          </div>
-
-          <div class="auth-field-group">
-            <label class="auth-label">Official Department / Agency</label>
-            <select class="auth-select" id="signup-dept">
-              <option value="Transit Security Command" selected>Transit Security Command</option>
-              <option value="Station SOC Operations">Station SOC Operations</option>
-              <option value="AI Threat Response Unit">AI Threat Response Unit</option>
-            </select>
-          </div>
-
-          <div class="auth-field-group">
-            <label class="auth-label">Official Station Email</label>
-            <input type="email" class="auth-input" id="signup-email" placeholder="a.vance@metro.presense.soc" required />
-          </div>
-
-          <div class="auth-field-group">
-            <label class="auth-label">Create Security Key</label>
-            <input type="password" class="auth-input" id="signup-password" placeholder="Choose a secure passkey" required />
-          </div>
-
-          <button type="submit" class="btn-auth-submit" id="btn-signup-submit">
-            Register Operator &amp; Enter SOC →
-          </button>
-        </form>
+            <!-- Access Dashboard Button with Golden Sunset Gradient -->
+            <button type="submit" class="btn-guard-submit" id="btn-access-dashboard">
+              <span class="btn-guard-label">Access Dashboard</span>
+              <span class="btn-guard-arrow">→</span>
+            </button>
+          </form>
+        </div>
       </div>
-    </section>
 
-    <!-- Architectural Visual Banner -->
-    <div class="landing-arch-banner">
-      <div class="arch-banner-inner">
-        <img src="assets/images/hero_cctv_ai_mesh.jpg" alt="PreSense AI Operations Network" class="arch-banner-img" />
-        <div class="arch-banner-overlay">
-          <h3>Centralized Multi-Sensor Intelligence</h3>
-          <p>
-            Seamless real-time synchronization between 9 live video feeds, an interactive SVG station topological map, automated crowd congestion counters, and OpenRouter visual inference.
-          </p>
+      <!-- Bottom Security Feature Strip -->
+      <div class="portal-features-row">
+        <div class="feat-badge-col">
+          <svg class="feat-badge-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <div class="feat-badge-text">
+            <span>SECURE</span>
+            <span>MONITORING</span>
+          </div>
+        </div>
+
+        <div class="feat-badge-separator"></div>
+
+        <div class="feat-badge-col">
+          <svg class="feat-badge-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14l3.5-3.5h7L18 14H4z"></path>
+            <rect x="7" y="7" width="8" height="4" rx="1"></rect>
+            <circle cx="11" cy="9" r="1" fill="currentColor"></circle>
+            <path d="M3 18h6"></path>
+            <path d="M6 14v4"></path>
+          </svg>
+          <div class="feat-badge-text">
+            <span>REAL-TIME</span>
+            <span>SURVEILLANCE</span>
+          </div>
+        </div>
+
+        <div class="feat-badge-separator"></div>
+
+        <div class="feat-badge-col">
+          <svg class="feat-badge-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <div class="feat-badge-text">
+            <span>SAFER</span>
+            <span>COMMUNITIES</span>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Core Features Grid -->
-    <section class="landing-features-sec" id="features-section">
-      <div class="features-sec-header">
-        <span class="features-pill">NEXT-GEN CORE PLATFORM</span>
-        <h2 class="features-sec-title">Engineered for High-Pressure Transit Operations</h2>
-        <p class="features-sec-desc">
-          From routine crowd flow monitoring to instantaneous Level 3 track emergency response, PreSense delivers sub-second situational awareness.
-        </p>
-      </div>
-
-      <div class="landing-cards-row">
-        <div class="landing-feature-card">
-          <div class="card-icon-box">📹</div>
-          <h3 class="card-feat-title">Atlas GridFS Video Streaming</h3>
-          <p class="card-feat-desc">
-            All 9 CCTV streams are stored directly in MongoDB Atlas GridFS and delivered with HTTP 206 byte-range seeking for uninterrupted looping playback.
-          </p>
-          <div class="card-feat-stat">9 CONCURRENT FEEDS • 1080P/4K</div>
-        </div>
-
-        <div class="landing-feature-card">
-          <div class="card-icon-box">🧠</div>
-          <h3 class="card-feat-title">OpenRouter Vision Intelligence</h3>
-          <p class="card-feat-desc">
-            Direct visual analysis using state-of-the-art vision models to evaluate passenger crowd dynamics, detect unattended luggage, and flag safety boundary breaches.
-          </p>
-          <div class="card-feat-stat">&lt; 2.5S REASONING LATENCY</div>
-        </div>
-
-        <div class="landing-feature-card">
-          <div class="card-icon-box">🚨</div>
-          <h3 class="card-feat-title">3-Tier Crisis Escalation</h3>
-          <p class="card-feat-desc">
-            Rigorous three-tier operational escalation matrix (Level 1: Observe, Level 2: Respond, Level 3: Emergency) with immediate supervisor notification and audit logs.
-          </p>
-          <div class="card-feat-stat">100% OPERATOR AUDIT TRAIL</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="landing-footer">
-      <div class="footer-left">
-        <div class="landing-brand-logo" style="width: 28px; height: 28px;">
-          <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="12" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="60 20" />
-            <circle cx="14" cy="14" r="4" fill="#fbbf24" />
-          </svg>
-        </div>
-        <span class="footer-copy">© 2026 PreSense SOC — AI-Powered CCTV Monitoring &amp; Rapid Crisis Response.</span>
-      </div>
-
-      <div class="footer-right">
-        <button class="btn-landing-demo" id="btn-footer-enter-dashboard">
-          <span>Launch Dashboard</span>
-          <span>→</span>
-        </button>
-      </div>
-    </footer>
   </div>
 
   <!-- ================= DASHBOARD APP CONTAINER ================= -->
@@ -341,6 +281,14 @@
           <div class="clock-time" id="clock-display">04:45:23 UTC</div>
           <div class="clock-date" id="date-display">Oct 10, 2026</div>
         </div>
+
+        <button class="portal-lock-btn" id="btn-return-landing" title="Lock & Return to Security Portal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Exit Portal</span>
+        </button>
       </div>
     </header>
 
